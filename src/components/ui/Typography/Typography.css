@@ -1,0 +1,62 @@
+.q-text {
+  margin: 0;
+}
+
+.q-text--display {
+  font-family: var(--q-font-serif);
+  font-size: 2.25rem;
+  font-weight: 600;
+  color: var(--q-green-deep);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.q-text--heading {
+  font-family: var(--q-font-serif);
+  font-size: 1.375rem;
+  font-weight: 500;
+  color: var(--q-green-deep);
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+}
+
+.q-text--subheading {
+  font-family: var(--q-font-sans);
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--q-green-deep);
+  opacity: 0.6;
+  line-height: 1.4;
+}
+
+.q-text--body {
+  font-family: var(--q-font-sans);
+  font-size: 0.9375rem;
+  font-weight: 300;
+  line-height: 1.75;
+  color: var(--q-text);
+}
+
+.q-text--mono {
+  font-family: var(--q-font-mono);
+  font-size: 0.875rem;
+  color: var(--q-green-deep);
+  line-height: 1.6;
+}
+
+.q-text--caption {
+  font-family: var(--q-font-sans);
+  font-size: 0.8125rem;
+  color: var(--q-text-muted);
+  line-height: 1.5;
+  font-weight: 300;
+}
+
+/* ── Divider ─────────────────────────────── */
+.q-divider {
+  border: none;
+  border-top: 1px solid var(--q-border);
+  margin: 1.5rem 0;
+}

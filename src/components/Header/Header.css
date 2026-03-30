@@ -1,0 +1,51 @@
+.q-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--q-border);
+}
+
+.q-header__logo {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.q-header__logo-icon {
+  width: 1.75rem;
+  height: 1.75rem;
+  color: var(--q-green-mid);
+}
+
+.q-header__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  background: var(--q-green-pale);
+  border: 1px solid var(--q-border);
+  border-radius: var(--q-radius-sm);
+  cursor: pointer;
+  color: var(--q-text);
+  transition:
+    background var(--q-transition),
+    border-color var(--q-transition);
+}
+
+.q-header__toggle:hover {
+  background: var(--q-green-lite);
+  border-color: var(--q-green-mid);
+}
+
+.q-header__toggle:focus-visible {
+  outline: 2px solid var(--q-green-mid);
+  outline-offset: 2px;
+}
+
+.q-header__toggle svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}

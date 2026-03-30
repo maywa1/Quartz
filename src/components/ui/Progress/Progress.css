@@ -1,0 +1,40 @@
+.q-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.q-progress__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.q-progress__label {
+  font-family: var(--q-font-sans);
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--q-green-deep);
+  letter-spacing: 0.03em;
+}
+
+.q-progress__value {
+  font-family: var(--q-font-mono);
+  font-size: 0.8rem;
+  color: var(--q-green-deep);
+}
+
+.q-progress__track {
+  width: 100%;
+  height: 6px;
+  background: var(--q-green-lite);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.q-progress__fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--q-green-deep), var(--q-green-mid));
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}

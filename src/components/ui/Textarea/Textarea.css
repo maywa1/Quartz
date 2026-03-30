@@ -1,0 +1,6 @@
+/* Extends shared .q-input styles from Input.css */
+.q-textarea {
+  resize: vertical;
+  min-height: 100px;
+  line-height: 1.6;
+}

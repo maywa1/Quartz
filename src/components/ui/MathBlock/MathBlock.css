@@ -1,0 +1,39 @@
+.q-math-block {
+  background: var(--q-green-pale);
+  border-left: 3px solid var(--q-green-mid);
+  border-radius: 0 var(--q-radius-md) var(--q-radius-md) 0;
+  padding: 1.25rem 1.5rem;
+  margin: 0;
+  box-shadow: var(--q-shadow-sm);
+}
+
+.q-math-block__label {
+  font-family: var(--q-font-sans);
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--q-green-mid);
+  margin-bottom: 0.5rem;
+}
+
+.q-math-block__expr {
+  font-family: var(--q-font-mono);
+  font-size: 1.05rem;
+  color: var(--q-green-deep);
+  line-height: 1.6;
+  overflow-x: auto;
+}
+
+/* ── Inline formula ───────────────────────── */
+.q-formula {
+  display: inline-block;
+  background: var(--q-green-pale);
+  color: var(--q-green-deep);
+  font-family: var(--q-font-mono);
+  font-size: 0.825em;
+  padding: 0.1em 0.45em;
+  border-radius: var(--q-radius-xs);
+  border: 1px solid var(--q-green-lite);
+  line-height: 1.5;
+}

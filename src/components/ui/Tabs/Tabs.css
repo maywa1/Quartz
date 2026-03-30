@@ -1,0 +1,61 @@
+.q-tabs-root {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+    margin-y: 2;
+}
+
+.q-tabs {
+  display: flex;
+  gap: 0.25rem;
+  background: var(--q-green-lite);
+  border-radius: var(--q-radius-md);
+  padding: 0.3rem;
+}
+
+.q-tab {
+  flex: 1;
+  padding: 0.5rem 1rem;
+  border-radius: var(--q-radius-sm);
+  font-family: var(--q-font-sans);
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: var(--q-text-muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background var(--q-transition), color var(--q-transition),
+    box-shadow var(--q-transition);
+  text-align: center;
+  outline: none;
+  white-space: nowrap;
+}
+
+.q-tab:focus-visible {
+  outline: 2px solid var(--q-green-mid);
+  outline-offset: -2px;
+}
+
+.q-tab:hover:not(.q-tab--active):not(.q-tab--disabled) {
+  color: var(--q-green-deep);
+}
+
+.q-tab--active {
+  background: #fff;
+  color: var(--q-green-deep);
+  font-weight: 500;
+  box-shadow: var(--q-shadow-sm);
+}
+
+.q-tab--disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.q-tab-panel {
+  padding: 1rem 0.25rem 0;
+}
+
+.q-tab-panel[hidden] {
+  display: none;
+}

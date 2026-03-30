@@ -1,0 +1,38 @@
+.q-callout {
+  border-radius: var(--q-radius-md);
+  padding: 1rem 1.25rem;
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  font-family: var(--q-font-sans);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.q-callout--info {
+  background: var(--q-green-pale);
+  border: 1px solid var(--q-green-lite);
+  color: var(--q-green-deep);
+}
+
+.q-callout--warn {
+  background: var(--q-warn-bg);
+  border: 1px solid var(--q-warn-border);
+  color: var(--q-warn-text);
+}
+
+.q-callout__icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+  line-height: 1.6;
+}
+
+.q-callout__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.q-callout__body strong {
+  font-weight: 500;
+}

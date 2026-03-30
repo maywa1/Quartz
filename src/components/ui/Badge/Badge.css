@@ -1,0 +1,29 @@
+.q-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  font-family: var(--q-font-sans);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.q-badge--green {
+  background: var(--q-green-lite);
+  color: var(--q-green-deep);
+}
+
+.q-badge--outline {
+  background: transparent;
+  border: 1px solid var(--q-border);
+  color: var(--q-green-deep);
+}
+
+.q-badge--muted {
+  background: #f3f4f6;
+  color: #6b7280;
+}

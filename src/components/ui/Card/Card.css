@@ -1,0 +1,25 @@
+.q-card {
+  border-radius: var(--q-radius-lg);
+  padding: 2rem;
+}
+
+.q-card--no-padding {
+  padding: 0;
+}
+
+.q-card--elevated {
+  background: var(--q-green-pale);
+  border: 1px solid var(--q-border);
+  box-shadow: var(--q-shadow-sm);
+  transition: box-shadow var(--q-transition), transform var(--q-transition);
+}
+
+.q-card--elevated:hover {
+  box-shadow: var(--q-shadow-md);
+  transform: translateY(-1px);
+}
+
+.q-card--flat {
+  background: #e8fdf0;
+  border: none;
+}

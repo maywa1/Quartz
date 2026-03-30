@@ -1,0 +1,64 @@
+.q-tooltip-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.q-tooltip {
+  position: absolute;
+  background: var(--q-green-deep);
+  color: #fff;
+  font-family: var(--q-font-sans);
+  font-size: 0.75rem;
+  font-weight: 400;
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--q-radius-sm);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--q-transition), transform var(--q-transition);
+  z-index: 50;
+  /* prevent layout shift when hidden */
+  visibility: hidden;
+}
+
+.q-tooltip--visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* ── Placement ────────────────────────────── */
+.q-tooltip--top {
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+}
+.q-tooltip--top.q-tooltip--visible {
+  transform: translateX(-50%) translateY(0);
+}
+
+.q-tooltip--bottom {
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%) translateY(-4px);
+}
+.q-tooltip--bottom.q-tooltip--visible {
+  transform: translateX(-50%) translateY(0);
+}
+
+.q-tooltip--left {
+  right: calc(100% + 8px);
+  top: 50%;
+  transform: translateY(-50%) translateX(4px);
+}
+.q-tooltip--left.q-tooltip--visible {
+  transform: translateY(-50%) translateX(0);
+}
+
+.q-tooltip--right {
+  left: calc(100% + 8px);
+  top: 50%;
+  transform: translateY(-50%) translateX(-4px);
+}
+.q-tooltip--right.q-tooltip--visible {
+  transform: translateY(-50%) translateX(0);
+}

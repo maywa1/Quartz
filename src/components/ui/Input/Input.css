@@ -1,0 +1,65 @@
+.q-input-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.q-input__label {
+  font-family: var(--q-font-sans);
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--q-green-deep);
+  letter-spacing: 0.03em;
+}
+
+.q-input {
+  background: #ffffff;
+  border: 1.5px solid var(--q-border);
+  border-radius: var(--q-radius-sm);
+  padding: 0.65rem 0.9rem;
+  font-family: var(--q-font-sans);
+  font-size: 0.9375rem;
+  font-weight: 300;
+  color: var(--q-text);
+  outline: none;
+  transition: border-color var(--q-transition), box-shadow var(--q-transition);
+  width: 100%;
+}
+
+.q-input::placeholder {
+  color: #9ca3af;
+}
+
+.q-input:focus {
+  border-color: var(--q-green-mid);
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15);
+}
+
+.q-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: var(--q-green-pale);
+}
+
+.q-input--mono {
+  font-family: var(--q-font-mono);
+  font-size: 0.875rem;
+}
+
+.q-input--error {
+  border-color: var(--q-error-border) !important;
+}
+
+.q-input--error:focus {
+  box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.15);
+}
+
+.q-input__hint {
+  font-size: 0.78rem;
+  color: var(--q-text-muted);
+  line-height: 1.4;
+}
+
+.q-input__hint--error {
+  color: var(--q-error);
+}
