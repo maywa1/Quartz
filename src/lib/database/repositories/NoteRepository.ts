@@ -19,14 +19,16 @@ export interface NoteCoordinates {
 export class NoteRepository extends BaseRepository {
   async create(
     name: string,
-    pdfId: number,
-    fileName = '',
+    pdfId: string,
     coordinates?: NoteCoordinates,
-  ): Promise<number> {
-    const result = await this.db.run(
-      `INSERT INTO notes (name, file_name, pdf_id, pdf_coordinate_x, pdf_coordinate_y, pdf_page)
-       VALUES (?, ?, ?, ?, ?, ?)`,
+  ): Promise<string> {
+    const id = crypto.randomUUID()
+    const fileName = `${id}.excalidraw`
+    await this.db.run(
+      `INSERT INTO notes (id, name, file_name, pdf_id, pdf_coordinate_x, pdf_coordinate_y, pdf_page)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [
+        id,
         name,
         fileName,
         pdfId,
@@ -35,14 +37,14 @@ export class NoteRepository extends BaseRepository {
         coordinates?.page ?? null,
       ],
     )
-    return result.lastID
+    return id
   }
 
-  async findById(id: number): Promise<Note | undefined> {
+  async findById(id: string): Promise<Note | undefined> {
     return this.db.get<Note>('SELECT * FROM notes WHERE id = ?', [id])
   }
 
-  async findByPdf(pdfId: number): Promise<Note[]> {
+  async findByPdf(pdfId: string): Promise<Note[]> {
     return this.db.all<Note>(
       'SELECT * FROM notes WHERE pdf_id = ? ORDER BY created_at DESC',
       [pdfId],
@@ -59,13 +61,6 @@ export class NoteRepository extends BaseRepository {
     )
   }
 
-  async findByTag(tag: string): Promise<Note[]> {
-    return this.db.all<Note>(
-      'SELECT * FROM notes WHERE tags LIKE ? ORDER BY created_at DESC',
-      [`%${tag}%`],
-    )
-  }
-
   async search(query: string): Promise<Note[]> {
     return this.db.all<Note>(
       'SELECT * FROM notes WHERE name LIKE ? OR file_name LIKE ? ORDER BY created_at DESC',
@@ -74,7 +69,7 @@ export class NoteRepository extends BaseRepository {
   }
 
   async update(
-    id: number,
+    id: string,
     updates: Partial<Omit<Note, 'id' | 'created_at' | 'pdf_id'>>,
   ): Promise<void> {
     const entries = Object.entries(updates)
@@ -89,18 +84,18 @@ export class NoteRepository extends BaseRepository {
     )
   }
 
-  async toggleViewLater(id: number): Promise<void> {
+  async toggleViewLater(id: string): Promise<void> {
     await this.db.run(
       'UPDATE notes SET view_later = NOT view_later, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
       [id],
     )
   }
 
-  async delete(id: number): Promise<void> {
+  async delete(id: string): Promise<void> {
     await this.db.run('DELETE FROM notes WHERE id = ?', [id])
   }
 
-  async countByPdf(pdfId: number): Promise<number> {
+  async countByPdf(pdfId: string): Promise<number> {
     const row = await this.db.get<{ count: number }>(
       'SELECT COUNT(*) as count FROM notes WHERE pdf_id = ?',
       [pdfId],
@@ -113,5 +108,14 @@ export class NoteRepository extends BaseRepository {
       'SELECT COUNT(*) as count FROM notes WHERE view_later = 1',
     )
     return row?.count ?? 0
+  }
+
+  async findByTag(tagId: string): Promise<Note[]> {
+    return this.db.all<Note>(
+      `SELECT n.* FROM notes n
+       INNER JOIN tag_notes tn ON n.id = tn.note_id
+       WHERE tn.tag_id = ?`,
+      [tagId],
+    )
   }
 }

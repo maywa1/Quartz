@@ -36,7 +36,9 @@ export class DatabaseController {
 
   static getInstance(): DatabaseController {
     if (!DatabaseController.instance) {
-      throw new Error('DatabaseController not initialized. Call initialize() first.')
+      throw new Error(
+        'DatabaseController not initialized. Call initialize() first.',
+      )
     }
     return DatabaseController.instance
   }
@@ -70,7 +72,7 @@ export class DatabaseController {
   private async initializeTables(): Promise<void> {
     await this.db.exec(`
       CREATE TABLE IF NOT EXISTS pdfs (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
         file_name TEXT NOT NULL UNIQUE,
         last_opened DATETIME,
@@ -78,25 +80,39 @@ export class DatabaseController {
       );
 
       CREATE TABLE IF NOT EXISTS notes (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
-        file_name TEXT NOT NULL DEFAULT '',
+        file_name TEXT NOT NULL UNIQUE,
         view_later INTEGER NOT NULL DEFAULT 0,
         pdf_coordinate_x REAL,
         pdf_coordinate_y REAL,
         pdf_page INTEGER,
-        pdf_id INTEGER,
-        tags TEXT,
+        pdf_id TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (pdf_id) REFERENCES pdfs(id) ON DELETE CASCADE
       );
 
       CREATE TABLE IF NOT EXISTS tags (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id TEXT PRIMARY KEY,
         name TEXT NOT NULL UNIQUE,
-        color TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS tag_notes (
+        tag_id TEXT NOT NULL,
+        note_id TEXT NOT NULL,
+        PRIMARY KEY (tag_id, note_id),
+        FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE,
+        FOREIGN KEY (note_id) REFERENCES notes(id) ON DELETE CASCADE
+      );
+
+      CREATE TABLE IF NOT EXISTS tag_pdfs (
+        tag_id TEXT NOT NULL,
+        pdf_id TEXT NOT NULL,
+        PRIMARY KEY (tag_id, pdf_id),
+        FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE,
+        FOREIGN KEY (pdf_id) REFERENCES pdfs(id) ON DELETE CASCADE
       );
 
       CREATE TABLE IF NOT EXISTS settings (
@@ -108,6 +124,8 @@ export class DatabaseController {
       CREATE INDEX IF NOT EXISTS idx_notes_pdf_id ON notes(pdf_id);
       CREATE INDEX IF NOT EXISTS idx_notes_view_later ON notes(view_later);
       CREATE INDEX IF NOT EXISTS idx_pdfs_name ON pdfs(name);
+      CREATE INDEX IF NOT EXISTS idx_tag_notes_note_id ON tag_notes(note_id);
+      CREATE INDEX IF NOT EXISTS idx_tag_pdfs_pdf_id ON tag_pdfs(pdf_id);
     `)
   }
 }

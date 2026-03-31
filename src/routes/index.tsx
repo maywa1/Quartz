@@ -1,44 +1,132 @@
+import { useState, useMemo } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
-import { useState } from 'react'
 import { NoteItem } from './-components/NoteItem'
 import { AddNoteItem } from './-components/AddNoteItem'
 import { SearchBar } from './-components/SearchBar'
-import { Tabs } from '#/components/ui'
+import { Tabs, Text, Divider } from '#/components/ui'
 import Header from '#/components/Header'
+import { useNotes, useAllNoteTags } from '#/hooks'
+import type { Note, Tag } from '#/types/types'
 
-export const Route = createFileRoute('/')({ component: Explorer })
+export const Route = createFileRoute('/')({
+  component: Explorer,
+})
+
+type TabId = 'all' | 'individual' | 'pdf'
+
+interface NoteWithTags extends Note {
+  tags: Tag[]
+}
 
 function Explorer() {
-  const [notes, setNotes] = useState([
-    { title: "Euler's Identity", tags: ['Analysis'], date: 'Today' },
-  ]);
+  const [searchQuery, setSearchQuery] = useState('')
+  const [activeTab, setActiveTab] = useState<TabId>('all')
 
-  function handleAdd({ title, tags }: { title: string; tags: string[] }) {
-    setNotes((prev) => [{ title, tags, date: 'Today' }, ...prev]);
-  }
+  const { data: notes = [], isLoading: notesLoading } = useNotes()
+  const { data: noteTagsMap = new Map() } = useAllNoteTags()
+
+  const processedNotes = useMemo((): NoteWithTags[] => {
+    let filtered: NoteWithTags[] = notes.map((note) => ({
+      ...note,
+      tags: noteTagsMap.get(note.id) || [],
+    }))
+
+    switch (activeTab) {
+      case 'individual':
+        filtered = filtered.filter((n) => !n.pdf_id)
+        break
+      case 'pdf':
+        filtered = filtered.filter((n) => !!n.pdf_id)
+        break
+    }
+
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase()
+      filtered = filtered.filter(
+        (note) =>
+          note.name.toLowerCase().includes(query) ||
+          note.tags.some((t) => t.name.toLowerCase().includes(query)),
+      )
+    }
+
+    return filtered.sort(
+      (a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+    )
+  }, [notes, noteTagsMap, activeTab, searchQuery])
+
+  const tabCounts = useMemo(() => {
+    return {
+      all: notes.length,
+      individual: notes.filter((n) => !n.pdf_id).length,
+      pdf: notes.filter((n) => !!n.pdf_id).length,
+    }
+  }, [notes])
+
+  const tabs = [
+    { id: 'all' as TabId, label: `All (${tabCounts.all})` },
+    {
+      id: 'individual' as TabId,
+      label: `Individual (${tabCounts.individual})`,
+    },
+    { id: 'pdf' as TabId, label: `PDF (${tabCounts.pdf})` },
+  ]
 
   return (
     <>
       <Header />
-      <div className="max-w-5xl mx-auto px-8 py-8jspace-y-4">
-        <SearchBar />
+      <div className="max-w-3xl mx-auto px-6 py-8 space-y-6">
+        <SearchBar
+          value={searchQuery}
+          onChange={setSearchQuery}
+          placeholder="Search notes..."
+        />
 
-        <AddNoteItem onAdd={handleAdd} />
+        <AddNoteItem />
+
+        <Divider />
+
         <Tabs
-          tabs={[
-            { label: 'All', content: <></> },
-            { label: 'Individual', content: <></> },
-            { label: 'PDF', content: <></> },
-          ]}/>
-        <div>
-        <p className="q-section-label">NOTES</p>
-          {notes.map((note, idx) => (
-            <div key={idx} className="border-b border-(--q-green-mid) py-2">
-              <NoteItem title={note.title} tags={note.tags} date={note.date} />
-            </div>
-          ))}
-        </div>
+          tabs={tabs.map((tab) => ({
+            label: tab.label,
+            content: (
+              <div className="py-4 space-y-1">
+                {notesLoading ? (
+                  <div className="py-8 text-center">
+                    <Text variant="caption" className="q-text--muted">
+                      Loading notes...
+                    </Text>
+                  </div>
+                ) : processedNotes.length === 0 ? (
+                  <div className="py-8 text-center">
+                    <Text variant="caption" className="q-text--muted">
+                      {searchQuery
+                        ? 'No notes match your search'
+                        : activeTab === 'all'
+                          ? 'No notes yet. Create your first one above!'
+                          : activeTab === 'individual'
+                            ? 'No standalone notes yet'
+                            : 'No PDF notes yet'}
+                    </Text>
+                  </div>
+                ) : (
+                  processedNotes.map((note) => (
+                    <NoteItem
+                      key={note.id}
+                      name={note.name}
+                      tags={note.tags}
+                      createdAt={note.created_at}
+                      onClick={() => console.log('Navigate to note:', note.id)}
+                    />
+                  ))
+                )}
+              </div>
+            ),
+          }))}
+          activeIndex={tabs.findIndex((t) => t.id === activeTab)}
+          onChange={(index) => setActiveTab(tabs[index].id)}
+        />
       </div>
     </>
-  );
+  )
 }

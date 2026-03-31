@@ -12,6 +12,18 @@ const config = defineConfig({
     tailwindcss(),
     tanstackRouter(),
     viteReact(),
+    // viteStaticCopy({
+    //   targets: [
+    //     {
+    //       src: 'node_modules/wa-sqlite/dist/wa-sqlite.wasm',
+    //       dest: '.',
+    //     },
+    //     {
+    //       src: 'node_modules/wa-sqlite/dist/wa-sqlite-async.wasm',
+    //       dest: '.',
+    //     }
+    //   ],
+    // }),
   ],
   optimizeDeps: {
     exclude: ['wa-sqlite'],

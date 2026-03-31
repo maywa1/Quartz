@@ -7,48 +7,59 @@ type PendingQuery = {
 
 interface DatabaseClientInterface {
   pdfs: {
-    create: (name: string, filePath: string) => Promise<number>
-    findById: (id: number) => Promise<PDF | undefined>
+    create: (name: string) => Promise<string>
+    findById: (id: string) => Promise<PDF | undefined>
     findByPath: (filePath: string) => Promise<PDF | undefined>
     findAll: (sortBy?: 'name' | 'created_at' | 'last_opened') => Promise<PDF[]>
     findAllWithNoteCounts: () => Promise<Array<PDF & { note_count: number }>>
+    findByTag: (tagId: string) => Promise<PDF[]>
     search: (query: string) => Promise<PDF[]>
     update: (
-      id: number,
+      id: string,
       updates: Partial<Omit<PDF, 'id' | 'created_at'>>,
     ) => Promise<void>
-    touchLastOpened: (id: number) => Promise<void>
-    delete: (id: number) => Promise<void>
+    touchLastOpened: (id: string) => Promise<void>
+    delete: (id: string) => Promise<void>
     findRecentlyOpened: (limit?: number) => Promise<PDF[]>
   }
   notes: {
     create: (
       name: string,
-      pdfId: number,
-      fileName?: string,
+      pdfId: string | null,
       coordinates?: { x?: number; y?: number; page?: number },
-    ) => Promise<number>
-    findById: (id: number) => Promise<Note | undefined>
-    findByPdf: (pdfId: number) => Promise<Note[]>
+    ) => Promise<string>
+    findById: (id: string) => Promise<Note | undefined>
+    findByPdf: (pdfId: string) => Promise<Note[]>
     findAll: () => Promise<Note[]>
     findViewLater: () => Promise<Note[]>
-    findByTag: (tag: string) => Promise<Note[]>
+    findByTag: (tagId: string) => Promise<Note[]>
     search: (query: string) => Promise<Note[]>
     update: (
-      id: number,
+      id: string,
       updates: Partial<Omit<Note, 'id' | 'created_at' | 'pdf_id'>>,
     ) => Promise<void>
-    toggleViewLater: (id: number) => Promise<void>
-    delete: (id: number) => Promise<void>
-    countByPdf: (pdfId: number) => Promise<number>
+    toggleViewLater: (id: string) => Promise<void>
+    delete: (id: string) => Promise<void>
+    countByPdf: (pdfId: string) => Promise<number>
     countViewLater: () => Promise<number>
   }
   tags: {
-    create: (name: string, color?: string) => Promise<number>
-    findById: (id: number) => Promise<Tag | undefined>
+    create: (name: string) => Promise<string>
+    findById: (id: string) => Promise<Tag | undefined>
+    findByName: (name: string) => Promise<Tag | undefined>
     findAll: () => Promise<Tag[]>
-    update: (id: number, name: string, color?: string) => Promise<void>
-    delete: (id: number) => Promise<void>
+    update: (id: string, name: string) => Promise<void>
+    delete: (id: string) => Promise<void>
+    addTagToNote: (tagId: string, noteId: string) => Promise<void>
+    removeTagFromNote: (tagId: string, noteId: string) => Promise<void>
+    getTagsForNote: (noteId: string) => Promise<Tag[]>
+    getNotesForTag: (tagId: string) => Promise<string[]>
+    addTagToPdf: (tagId: string, pdfId: string) => Promise<void>
+    removeTagFromPdf: (tagId: string, pdfId: string) => Promise<void>
+    getTagsForPdf: (pdfId: string) => Promise<Tag[]>
+    getPdfsForTag: (tagId: string) => Promise<string[]>
+    getAllNoteTags: () => Promise<Record<string, Tag[]>>
+    getAllPdfTags: () => Promise<Record<string, Tag[]>>
   }
   settings: {
     set: (key: string, value: string) => Promise<void>
@@ -102,12 +113,31 @@ export class DatabaseWorkerClient implements DatabaseClientInterface {
     this.settings = this.createRepositoryProxy('settings')
   }
 
-  private createRepositoryProxy(name: string) {
+  private createRepositoryProxy(repository: string) {
     return new Proxy({} as any, {
       get: (_, method: string) => {
-        return (...args: any[]) => this.query(name, method, ...args)
+        return (...args: any[]) => this.query(repository, method, ...args)
       },
     })
+  }
+
+  async query(repository: string, method: string, ...args: any[]) {
+    const id = this.queryId++
+    return new Promise((resolve, reject) => {
+      this.pendingQueries.set(id, { resolve, reject })
+      this.worker.postMessage({
+        type: 'query',
+        payload: { repository, method, args, id },
+      })
+    })
+  }
+
+  getStatistics(): Promise<Statistics> {
+    return this.query('db', 'getStatistics') as Promise<Statistics>
+  }
+
+  terminate(): void {
+    this.worker.terminate()
   }
 
   async init(dbName?: string) {
@@ -118,15 +148,4 @@ export class DatabaseWorkerClient implements DatabaseClientInterface {
     })
   }
 
-  async query(method: string, ...args: any[]) {
-    const id = this.queryId++
-    return new Promise((resolve, reject) => {
-      this.pendingQueries.set(id, { resolve, reject })
-      this.worker.postMessage({ type: 'query', payload: { method, args, id } })
-    })
-  }
-
-  getStatistics(): Promise<Statistics> {
-    return this.query('getStatistics') as Promise<Statistics>
-  }
 }

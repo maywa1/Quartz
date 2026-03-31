@@ -27,3 +27,12 @@
   background: #f3f4f6;
   color: #6b7280;
 }
+
+.q-badge--clickable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.q-badge--clickable:hover {
+  opacity: 0.8;
+}

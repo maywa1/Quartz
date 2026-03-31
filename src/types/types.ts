@@ -1,5 +1,5 @@
 export interface PDF {
-  id: number
+  id: string
   name: string
   file_name: string
   page_count?: number
@@ -9,23 +9,21 @@ export interface PDF {
 }
 
 export interface Note {
-  id: number
+  id: string
   name: string
   file_name: string
   view_later: boolean
   pdf_coordinate_x?: number
   pdf_coordinate_y?: number
   pdf_page?: number
-  pdf_id?: number
-  tags?: string
+  pdf_id: string | null
   created_at: string
   updated_at: string
 }
 
 export interface Tag {
-  id: number
+  id: string
   name: string
-  color?: string
   created_at: string
 }
 
@@ -35,4 +33,3 @@ export interface Statistics {
   viewLaterCount: number
   recentlyOpenedPdfs: PDF[]
 }
-

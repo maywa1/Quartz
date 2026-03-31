@@ -9,20 +9,21 @@ export const queryKeys = {
     recentlyOpened: (limit?: number) =>
       ['data', 'pdfs', 'recentlyOpened', limit] as const,
     search: (query: string) => ['data', 'pdfs', 'search', query] as const,
-    detail: (id: number) => ['data', 'pdfs', 'detail', id] as const,
+    detail: (id: string) => ['data', 'pdfs', 'detail', id] as const,
     byPath: (path: string) => ['data', 'pdfs', 'byPath', path] as const,
+    byTag: (tagId: string) => ['data', 'pdfs', 'byTag', tagId] as const,
   },
 
   notes: {
     all: ['data', 'notes'] as const,
     list: ['data', 'notes', 'list'] as const,
-    byPdf: (pdfId: number) => ['data', 'notes', 'byPdf', pdfId] as const,
+    byPdf: (pdfId: string) => ['data', 'notes', 'byPdf', pdfId] as const,
     viewLater: ['data', 'notes', 'viewLater'] as const,
-    byTag: (tag: string) => ['data', 'notes', 'byTag', tag] as const,
+    byTag: (tagId: string) => ['data', 'notes', 'byTag', tagId] as const,
     search: (query: string) => ['data', 'notes', 'search', query] as const,
-    detail: (id: number) => ['data', 'notes', 'detail', id] as const,
+    detail: (id: string) => ['data', 'notes', 'detail', id] as const,
     count: {
-      byPdf: (pdfId: number) =>
+      byPdf: (pdfId: string) =>
         ['data', 'notes', 'count', 'byPdf', pdfId] as const,
       viewLater: ['data', 'notes', 'count', 'viewLater'] as const,
     },
@@ -31,7 +32,12 @@ export const queryKeys = {
   tags: {
     all: ['data', 'tags'] as const,
     list: ['data', 'tags', 'list'] as const,
-    detail: (id: number) => ['data', 'tags', 'detail', id] as const,
+    detail: (id: string) => ['data', 'tags', 'detail', id] as const,
+    byName: (name: string) => ['data', 'tags', 'byName', name] as const,
+    forNote: (noteId: string) => ['data', 'tags', 'forNote', noteId] as const,
+    forPdf: (pdfId: string) => ['data', 'tags', 'forPdf', pdfId] as const,
+    allNoteTags: ['data', 'tags', 'allNoteTags'] as const,
+    allPdfTags: ['data', 'tags', 'allPdfTags'] as const,
   },
 
   settings: {

@@ -11,9 +11,11 @@ self.onmessage = async (event: MessageEvent<WorkerMessage>) => {
   const { type, payload } = event.data
 
   if (type === 'init') {
+    if (dbController) return
     try {
-      dbController = await DatabaseController.initialize(payload?.dbName || 'app.db')
-      // Tell main thread DB is ready
+      dbController = await DatabaseController.initialize(
+        payload?.dbName || 'app.db',
+      )
       self.postMessage({ type: 'ready' })
     } catch (err) {
       self.postMessage({ type: 'error', error: (err as Error).message })
@@ -21,13 +23,13 @@ self.onmessage = async (event: MessageEvent<WorkerMessage>) => {
   }
 
   if (type === 'query' && dbController) {
-    try {
-      const { method, args } = payload
-      // @ts-ignore
-      const result = await dbController[method](...args)
-      self.postMessage({ type: 'queryResult', result, id: payload.id })
-    } catch (err) {
-      self.postMessage({ type: 'queryError', error: (err as Error).message, id: payload.id })
-    }
+  const { repository, method, args, id } = payload
+  try {
+    // @ts-ignore
+    const result = await dbController[repository][method](...args)
+    self.postMessage({ type: 'queryResult', result, id })
+  } catch (err) {
+    self.postMessage({ type: 'queryError', error: (err as Error).message, id })
   }
+}
 }

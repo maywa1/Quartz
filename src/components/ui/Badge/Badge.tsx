@@ -1,37 +1,35 @@
-import type { CSSProperties, ReactNode } from "react";
-import type { BadgeVariant } from "../types";
-import { cn } from "../cn";
-import "./Badge.css";
+import type { CSSProperties, ReactNode, MouseEvent } from 'react'
+import type { BadgeVariant } from '../types'
+import { cn } from '../cn'
+import './Badge.css'
 
 export interface BadgeProps {
-  /** Visual style of the badge */
-  variant?: BadgeVariant;
-  /** Content inside the badge */
-  children: ReactNode;
-  className?: string;
-  style?: CSSProperties;
+  variant?: BadgeVariant
+  children: ReactNode
+  className?: string
+  style?: CSSProperties
+  onClick?: (e: MouseEvent<HTMLSpanElement>) => void
 }
 
-/**
- * Badge — compact label for tags, topics, and status.
- *
- * @example
- * <Badge variant="green">Calculus</Badge>
- * <Badge variant="outline">Draft</Badge>
- * <Badge variant="muted">Archived</Badge>
- */
 export function Badge({
-  variant = "green",
+  variant = 'green',
   children,
   className,
   style,
+  onClick,
 }: BadgeProps) {
   return (
     <span
-      className={cn("q-badge", `q-badge--${variant}`, className)}
+      className={cn(
+        'q-badge',
+        `q-badge--${variant}`,
+        onClick && 'q-badge--clickable',
+        className,
+      )}
       style={style}
+      onClick={onClick}
     >
       {children}
     </span>
-  );
+  )
 }

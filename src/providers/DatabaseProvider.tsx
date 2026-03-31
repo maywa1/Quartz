@@ -1,16 +1,7 @@
-// DatabaseProvider.tsx
-import { createContext, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
+import { DatabaseContext } from './useDatabase'
 import { DatabaseWorkerClient } from '#/lib/DatabaseWorkerClient'
-
-interface DatabaseContextValue {
-  db: DatabaseWorkerClient | null
-  ready: boolean
-}
-
-const DatabaseContext = createContext<DatabaseContextValue | undefined>(
-  undefined,
-)
 
 interface DatabaseProviderProps {
   dbName?: string
@@ -18,18 +9,20 @@ interface DatabaseProviderProps {
 }
 
 export function DatabaseProvider({ dbName, children }: DatabaseProviderProps) {
-  const [workerClient, setWorkerClient] = useState<DatabaseWorkerClient | null>(
-    null,
-  )
+  const [workerClient, setWorkerClient] = useState<DatabaseWorkerClient | null>(null)
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
-    // Only run in browser
     const client = new DatabaseWorkerClient()
     setWorkerClient(client)
-
     client.init(dbName).then(() => setReady(true))
+
+    return () => {
+      client.terminate()
+    }
   }, [dbName])
+
+  if (!ready || !workerClient) return null // or a loading spinner
 
   return (
     <DatabaseContext.Provider value={{ db: workerClient, ready }}>
@@ -37,5 +30,3 @@ export function DatabaseProvider({ dbName, children }: DatabaseProviderProps) {
     </DatabaseContext.Provider>
   )
 }
-
-export { DatabaseContext }

@@ -1,6 +1,6 @@
 import * as SQLite from 'wa-sqlite'
-import SQLiteESMFactory from 'wa-sqlite/dist/wa-sqlite-async.mjs'
-import { OriginPrivateFileSystemVFS } from 'wa-sqlite/src/examples/OriginPrivateFileSystemVFS.js'
+import SQLiteESMFactory from 'wa-sqlite/dist/wa-sqlite.mjs'  // ← sync build, NOT wa-sqlite-async
+import { AccessHandlePoolVFS } from 'wa-sqlite/src/examples/AccessHandlePoolVFS.js'
 
 export interface RunResult {
   lastID: number
@@ -20,14 +20,16 @@ export class Database {
     const module = await SQLiteESMFactory({
       locateFile: (file: string) => `/${file}`,
     })
-
     this.sqlite3 = SQLite.Factory(module)
-
-    const vfs = new OriginPrivateFileSystemVFS()
+    const vfs = new AccessHandlePoolVFS('/')   // directory path in OPFS
+    await vfs.isReady                           // must await before registering
     // @ts-ignore
     this.sqlite3.vfs_register(vfs, true)
-
-    this.db = await this.sqlite3.open_v2(this.dbName)
+    this.db = await this.sqlite3.open_v2(
+      this.dbName,
+      SQLite.SQLITE_OPEN_READWRITE | SQLite.SQLITE_OPEN_CREATE,
+      'AccessHandlePool',   // ← must match vfs.name getter exactly
+    )
   }
 
   async close(): Promise<void> {

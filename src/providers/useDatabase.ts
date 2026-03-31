@@ -6,7 +6,7 @@ interface DatabaseContextValue {
   ready: boolean
 }
 
-const DatabaseContext = createContext<DatabaseContextValue | undefined>(
+export const DatabaseContext = createContext<DatabaseContextValue | undefined>(
   undefined,
 )
 
@@ -17,5 +17,3 @@ export function useDatabase(): DatabaseWorkerClient {
   if (!context.db) throw new Error('Database not initialized')
   return context.db
 }
-
-export { DatabaseContext }

@@ -44,6 +44,11 @@
   padding: 0.1rem 0.45rem !important;
 }
 
+.q-note-item__pdf {
+  font-size: 0.68rem !important;
+  padding: 0.1rem 0.45rem !important;
+}
+
 .q-note-item__date {
   font-family: var(--q-font-sans);
   font-size: 0.75rem;

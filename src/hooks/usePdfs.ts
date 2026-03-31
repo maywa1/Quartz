@@ -32,7 +32,7 @@ export function useRecentlyOpenedPdfs(limit = 5) {
   })
 }
 
-export function usePdf(id: number) {
+export function usePdf(id: string) {
   const db = useDatabase()
 
   return useQuery({
@@ -60,13 +60,22 @@ export function useSearchPdfs(query: string) {
   })
 }
 
+export function usePdfsByTag(tagId: string) {
+  const db = useDatabase()
+
+  return useQuery({
+    queryKey: queryKeys.pdfs.byTag(tagId),
+    queryFn: () => db.pdfs.findByTag(tagId),
+    enabled: tagId.length > 0,
+  })
+}
+
 export interface CreatePdfParams {
   name: string
-  filePath: string
 }
 
 export interface UpdatePdfParams {
-  id: number
+  id: string
   updates: Partial<Omit<PDF, 'id' | 'created_at'>>
 }
 
@@ -75,8 +84,7 @@ export function useCreatePdf() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ name, filePath }: CreatePdfParams) =>
-      db.pdfs.create(name, filePath),
+    mutationFn: ({ name }: CreatePdfParams) => db.pdfs.create(name),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.pdfs.all })
     },
@@ -102,7 +110,7 @@ export function useDeletePdf() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (id: number) => db.pdfs.delete(id),
+    mutationFn: (id: string) => db.pdfs.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.pdfs.all })
     },
@@ -114,7 +122,7 @@ export function useTouchLastOpened() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (id: number) => db.pdfs.touchLastOpened(id),
+    mutationFn: (id: string) => db.pdfs.touchLastOpened(id),
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.pdfs.detail(id) })
       queryClient.invalidateQueries({

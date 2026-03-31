@@ -5,8 +5,7 @@ import { queryKeys } from './queryKeys'
 
 export interface CreateNoteParams {
   name: string
-  pdfId: number
-  fileName?: string
+  pdfId: string | null
   coordinates?: {
     x?: number
     y?: number
@@ -15,7 +14,7 @@ export interface CreateNoteParams {
 }
 
 export interface UpdateNoteParams {
-  id: number
+  id: string
   updates: Partial<Omit<Note, 'id' | 'created_at' | 'pdf_id'>>
 }
 
@@ -28,7 +27,7 @@ export function useNotes() {
   })
 }
 
-export function useNotesByPdf(pdfId: number) {
+export function useNotesByPdf(pdfId: string) {
   const db = useDatabase()
 
   return useQuery({
@@ -46,13 +45,13 @@ export function useViewLaterNotes() {
   })
 }
 
-export function useNotesByTag(tag: string) {
+export function useNotesByTag(tagId: string) {
   const db = useDatabase()
 
   return useQuery({
-    queryKey: queryKeys.notes.byTag(tag),
-    queryFn: () => db.notes.findByTag(tag),
-    enabled: tag.length > 0,
+    queryKey: queryKeys.notes.byTag(tagId),
+    queryFn: () => db.notes.findByTag(tagId),
+    enabled: tagId.length > 0,
   })
 }
 
@@ -66,7 +65,7 @@ export function useSearchNotes(query: string) {
   })
 }
 
-export function useNote(id: number) {
+export function useNote(id: string) {
   const db = useDatabase()
 
   return useQuery({
@@ -75,7 +74,7 @@ export function useNote(id: number) {
   })
 }
 
-export function useNoteCountByPdf(pdfId: number) {
+export function useNoteCountByPdf(pdfId: string) {
   const db = useDatabase()
 
   return useQuery({
@@ -98,11 +97,11 @@ export function useCreateNote() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ name, pdfId, fileName, coordinates }: CreateNoteParams) =>
-      db.notes.create(name, pdfId, fileName, coordinates),
+    mutationFn: ({ name, pdfId, coordinates }: CreateNoteParams) =>
+      db.notes.create(name, pdfId, coordinates),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.notes.all })
-    },
+      queryClient.invalidateQueries({ queryKey: queryKeys.notes.list })
+    }
   })
 }
 
@@ -125,7 +124,7 @@ export function useDeleteNote() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (id: number) => db.notes.delete(id),
+    mutationFn: (id: string) => db.notes.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.notes.all })
     },
@@ -137,7 +136,7 @@ export function useToggleViewLater() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (id: number) => db.notes.toggleViewLater(id),
+    mutationFn: (id: string) => db.notes.toggleViewLater(id),
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.notes.all })
       queryClient.invalidateQueries({ queryKey: queryKeys.notes.detail(id) })
