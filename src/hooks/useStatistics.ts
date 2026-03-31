@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import type { Statistics } from '#/types/types'
-import { useDatabase } from './providers'
+import { useDatabase } from '#/providers'
 import { queryKeys } from './queryKeys'
 
 export function useStatistics() {

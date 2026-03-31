@@ -1,0 +1,109 @@
+.q-add-note-item {
+  padding: 0.85rem 1rem;
+  border-radius: var(--q-radius-md);
+  cursor: pointer;
+  transition: background var(--q-transition);
+  border: 1px solid transparent;
+  outline: none;
+}
+
+.q-add-note-item__trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--q-text-muted);
+  font-family: var(--q-font-sans);
+  font-size: 0.875rem;
+  transition: color var(--q-transition);
+  user-select: none;
+}
+
+.q-add-note-item:hover .q-add-note-item__trigger {
+  color: var(--q-text);
+}
+
+.q-add-note-item__trigger-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  border: 1.5px solid currentColor;
+  flex-shrink: 0;
+  transition: background var(--q-transition), color var(--q-transition), transform var(--q-transition);
+}
+
+.q-add-note-item--expanded .q-add-note-item__trigger-icon {
+  background: var(--q-green-mid);
+  border-color: var(--q-green-mid);
+  color: white;
+  transform: rotate(45deg);
+}
+
+.q-add-note-item__form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: 0.65rem;
+}
+
+.q-add-note-item__input {
+  font-family: var(--q-font-sans);
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--q-text);
+  background: transparent;
+  border: none;
+  border-bottom: 1.5px solid var(--q-green-mid);
+  border-radius: 0;
+  padding: 0.2rem 0;
+  outline: none;
+  width: 100%;
+  line-height: 1.35;
+}
+
+.q-add-note-item__input::placeholder {
+  color: var(--q-text-muted);
+  font-weight: 400;
+}
+
+.q-add-note-item__input:focus {
+  border-bottom-color: rgba(22, 101, 52, 0.7);
+}
+
+.q-add-note-item__tags-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.q-add-note-item__tag-input {
+  font-family: var(--q-font-sans);
+  font-size: 0.75rem;
+  color: var(--q-text);
+  background: transparent;
+  border: none;
+  outline: none;
+  min-width: 80px;
+  flex: 1;
+  padding: 0;
+}
+
+.q-add-note-item__tag-input::placeholder {
+  color: var(--q-text-muted);
+}
+
+.q-add-note-item__tag-hint {
+  font-family: var(--q-font-sans);
+  font-size: 0.7rem;
+  color: var(--q-text-muted);
+}
+
+.q-add-note-item__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.15rem;
+}

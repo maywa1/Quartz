@@ -16,7 +16,7 @@ export interface Note {
   pdf_coordinate_x?: number
   pdf_coordinate_y?: number
   pdf_page?: number
-  pdf_id: number
+  pdf_id?: number
   tags?: string
   created_at: string
   updated_at: string

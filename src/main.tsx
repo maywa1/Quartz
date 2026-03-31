@@ -2,8 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { RouterProvider } from '@tanstack/react-router'
 import { getRouter } from '#/router'
-import { QueryProvider } from '#/hooks/providers/QueryProvider'
-import { DatabaseProvider } from '#/hooks/providers/DatabaseProvider'
+import { QueryProvider, DatabaseProvider } from '#/providers'
 
 import '#/styles.css'
 

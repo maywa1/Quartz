@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import type { PDF } from '#/types/types'
-import { useDatabase } from './providers'
+import { useDatabase } from '#/providers'
 import { queryKeys } from './queryKeys'
 
 type PdfSortBy = 'name' | 'created_at' | 'last_opened'

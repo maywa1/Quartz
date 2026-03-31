@@ -1,5 +1,6 @@
 // DatabaseProvider.tsx
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
+import { createContext, useEffect, useState } from 'react'
+import type { ReactNode } from 'react'
 import { DatabaseWorkerClient } from '#/lib/DatabaseWorkerClient'
 
 interface DatabaseContextValue {
@@ -7,7 +8,9 @@ interface DatabaseContextValue {
   ready: boolean
 }
 
-const DatabaseContext = createContext<DatabaseContextValue | undefined>(undefined)
+const DatabaseContext = createContext<DatabaseContextValue | undefined>(
+  undefined,
+)
 
 interface DatabaseProviderProps {
   dbName?: string
@@ -15,7 +18,9 @@ interface DatabaseProviderProps {
 }
 
 export function DatabaseProvider({ dbName, children }: DatabaseProviderProps) {
-  const [workerClient, setWorkerClient] = useState<DatabaseWorkerClient | null>(null)
+  const [workerClient, setWorkerClient] = useState<DatabaseWorkerClient | null>(
+    null,
+  )
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
@@ -33,8 +38,4 @@ export function DatabaseProvider({ dbName, children }: DatabaseProviderProps) {
   )
 }
 
-export function useDatabase() {
-  const context = useContext(DatabaseContext)
-  if (!context) throw new Error('useDatabase must be used within DatabaseProvider')
-  return context
-}
+export { DatabaseContext }

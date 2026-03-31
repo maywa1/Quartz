@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useDatabase } from './providers'
+import { useDatabase } from '#/providers'
 import { queryKeys } from './queryKeys'
 
 export interface CreateTagParams {

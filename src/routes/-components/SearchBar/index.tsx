@@ -1,5 +1,5 @@
 import { useId, forwardRef, useState } from 'react'
-import { cn } from '../cn'
+import { cn } from '#/components/ui/cn'
 import './SearchBar.css'
 
 export interface SearchBarProps {

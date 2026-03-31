@@ -85,7 +85,7 @@ export class DatabaseController {
         pdf_coordinate_x REAL,
         pdf_coordinate_y REAL,
         pdf_page INTEGER,
-        pdf_id INTEGER NOT NULL,
+        pdf_id INTEGER,
         tags TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,

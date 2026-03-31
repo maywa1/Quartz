@@ -1,6 +1,6 @@
 import type { KeyboardEvent } from "react";
-import { Badge } from "../Badge";
-import { cn } from "../cn";
+import { cn } from "#/components/ui/cn";
+import { Badge } from "#/components/ui";
 import "./NoteItem.css";
 
 export interface NoteItemProps {

@@ -17,23 +17,17 @@ export class Database {
   }
 
   async open(): Promise<void> {
-    console.log('Starting SQLiteESMFactory...')
     const module = await SQLiteESMFactory({
       locateFile: (file: string) => `/${file}`,
     })
-    console.log('SQLite module loaded')
 
     this.sqlite3 = SQLite.Factory(module)
-    console.log('SQLite Factory created')
 
     const vfs = new OriginPrivateFileSystemVFS()
     // @ts-ignore
     this.sqlite3.vfs_register(vfs, true)
-    console.log('OPFS VFS registered')
 
-    console.log('Opening database...')
     this.db = await this.sqlite3.open_v2(this.dbName)
-    console.log('Database connected:', this.dbName)
   }
 
   async close(): Promise<void> {
