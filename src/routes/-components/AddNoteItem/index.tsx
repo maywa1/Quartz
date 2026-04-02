@@ -127,7 +127,12 @@ export function AddNoteItem({ className }: AddNoteItemProps) {
     if (!selectedPdf || !title.trim()) return
 
     try {
-      const pdfId = await createPdf.mutateAsync({ name: title.trim() })
+      console.log('Creating PDF with name:', title.trim())
+      const pdfId = await createPdf.mutateAsync({
+        name: title.trim(),
+        file: selectedPdf,
+      })
+      console.log('PDF created with id:', pdfId)
 
       const finalTags =
         tagInput.trim() && !tags.includes(tagInput.trim())
@@ -148,6 +153,7 @@ export function AddNoteItem({ className }: AddNoteItemProps) {
       toast.showSuccess(`PDF "${title.trim()}" created successfully`)
       handleCancel()
     } catch (error) {
+      console.error('Failed to create PDF:', error)
       toast.showError('Failed to create PDF')
     }
   }

@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import type { PDF } from '#/types/types'
 import { useDatabase } from '#/providers'
 import { queryKeys } from './queryKeys'
+import { FileStorage } from '#/lib/FileStorage'
 
 type PdfSortBy = 'name' | 'created_at' | 'last_opened'
 
@@ -72,6 +73,7 @@ export function usePdfsByTag(tagId: string) {
 
 export interface CreatePdfParams {
   name: string
+  file?: File
 }
 
 export interface UpdatePdfParams {
@@ -84,7 +86,17 @@ export function useCreatePdf() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ name }: CreatePdfParams) => db.pdfs.create(name),
+    mutationFn: async ({ name, file }: CreatePdfParams) => {
+      const id = await db.pdfs.create(name)
+
+      if (file) {
+        const arrayBuffer = await file.arrayBuffer()
+        const path = FileStorage.buildPdfPath(id)
+        await FileStorage.write(path, arrayBuffer)
+      }
+
+      return id
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.pdfs.all })
     },

@@ -122,6 +122,7 @@ export class DatabaseWorkerClient implements DatabaseClientInterface {
   }
 
   async query(repository: string, method: string, ...args: any[]) {
+    console.log('DB Client query:', repository, method, args)
     const id = this.queryId++
     return new Promise((resolve, reject) => {
       this.pendingQueries.set(id, { resolve, reject })
@@ -147,5 +148,4 @@ export class DatabaseWorkerClient implements DatabaseClientInterface {
       this.worker.postMessage({ type: 'init', payload: { dbName } })
     })
   }
-
 }
