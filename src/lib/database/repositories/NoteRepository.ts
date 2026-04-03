@@ -23,7 +23,7 @@ export class NoteRepository extends BaseRepository {
     coordinates?: NoteCoordinates,
   ): Promise<string> {
     const id = crypto.randomUUID()
-    const fileName = `${id}.excalidraw`
+    const fileName = `${id}.tldr`
     await this.db.run(
       `INSERT INTO notes (id, name, file_name, pdf_id, pdf_coordinate_x, pdf_coordinate_y, pdf_page)
        VALUES (?, ?, ?, ?, ?, ?, ?)`,

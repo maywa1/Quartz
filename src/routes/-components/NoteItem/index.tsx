@@ -1,11 +1,13 @@
 import type { KeyboardEvent } from 'react'
 import { useMemo } from 'react'
+import { useNavigate } from '@tanstack/react-router'
 import { cn } from '#/components/ui/cn'
 import { Badge } from '#/components/ui'
 import type { Tag } from '#/types/types'
 import './NoteItem.css'
 
 export interface NoteItemProps {
+  id: string
   name: string
   tags?: Tag[]
   createdAt?: string
@@ -29,6 +31,7 @@ function formatDate(dateString?: string): string {
 }
 
 export function NoteItem({
+  id,
   name,
   tags = [],
   createdAt,
@@ -37,10 +40,20 @@ export function NoteItem({
   onClick,
   className,
 }: NoteItemProps) {
+  const navigate = useNavigate()
+
   function handleKeyDown(e: KeyboardEvent<HTMLDivElement>) {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault()
       onClick?.()
+    }
+  }
+
+  const handleClick = () => {
+    if (onClick) {
+      onClick()
+    } else {
+      navigate({ to: '/workspace/$docId', params: { docId: id } })
     }
   }
 
@@ -53,7 +66,7 @@ export function NoteItem({
       tabIndex={0}
       aria-current={active ? 'page' : undefined}
       className={cn('q-note-item', active && 'q-note-item--active', className)}
-      onClick={onClick}
+      onClick={handleClick}
       onKeyDown={handleKeyDown}
     >
       <span className="q-note-item__title">{name}</span>

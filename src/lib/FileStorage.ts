@@ -1,3 +1,5 @@
+import { defaultShapeUtils, createTLStore } from "tldraw"
+
 export class FileStorage {
   private static async getOpfsRoot(): Promise<FileSystemDirectoryHandle> {
     return navigator.storage.getDirectory()
@@ -63,7 +65,7 @@ export class FileStorage {
   }
 
   static buildNotePath(id: string): string {
-    return `${id}/note.excalidraw`
+    return `${id}/note.tldr`
   }
 
   static buildPdfPath(id: string): string {
@@ -75,12 +77,7 @@ export class FileStorage {
   }
 }
 
-export const DEFAULT_EXCALIDRAW_CONTENT = JSON.stringify({
-  type: 'excalidraw',
-  version: 2,
-  elements: [],
-  appState: {
-    currentItemStrokeWidth: 0.5,
-    zenModeEnabled: true,
-  },
-})
+export const DEFAULT_TLDRAW_CONTENT = (() => {
+  const store = createTLStore({ shapeUtils: defaultShapeUtils })
+  return JSON.stringify(store.getStoreSnapshot())
+})()

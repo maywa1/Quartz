@@ -9,11 +9,14 @@ interface DatabaseProviderProps {
 }
 
 export function DatabaseProvider({ dbName, children }: DatabaseProviderProps) {
-  const [workerClient, setWorkerClient] = useState<DatabaseWorkerClient | null>(null)
+  const [workerClient, setWorkerClient] = useState<DatabaseWorkerClient | null>(
+    null,
+  )
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
     const client = new DatabaseWorkerClient()
+    ;(window as any).__db = client
     setWorkerClient(client)
     client.init(dbName).then(() => setReady(true))
 

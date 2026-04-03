@@ -28,8 +28,8 @@ function Explorer() {
 
   const { data: notes = [], isLoading: notesLoading } = useNotes()
   const { data: pdfs = [], isLoading: pdfsLoading } = usePdfs()
-  const { data: noteTagsMap = new Map() } = useAllNoteTags()
-  const { data: pdfTagsMap = new Map() } = useAllPdfTags()
+  const { data: noteTagsMap = new Map<string, Tag[]>() } = useAllNoteTags()
+  const { data: pdfTagsMap = new Map<string, Tag[]>() } = useAllPdfTags()
 
   const processedNotes = useMemo((): NoteWithTags[] => {
     return notes
@@ -43,7 +43,7 @@ function Explorer() {
         const query = searchQuery.toLowerCase()
         return (
           note.name.toLowerCase().includes(query) ||
-          note.tags.some((t: Tag) => t.name.toLowerCase().includes(query))
+          note.tags.some((t) => t.name.toLowerCase().includes(query))
         )
       })
       .sort(
@@ -63,7 +63,7 @@ function Explorer() {
         const query = searchQuery.toLowerCase()
         return (
           pdf.name.toLowerCase().includes(query) ||
-          pdf.tags.some((t: Tag) => t.name.toLowerCase().includes(query))
+          pdf.tags.some((t) => t.name.toLowerCase().includes(query))
         )
       })
       .sort(
@@ -143,25 +143,21 @@ function Explorer() {
                       processedNotes.map((note) => (
                         <NoteItem
                           key={note.id}
+                          id={note.id}
                           name={note.name}
                           tags={note.tags}
                           createdAt={note.created_at}
-                          onClick={() =>
-                            console.log('Navigate to note:', note.id)
-                          }
                         />
                       ))}
                     {tab.id !== 'individual' &&
                       processedPdfs.map((pdf) => (
                         <NoteItem
                           key={pdf.id}
+                          id={pdf.id}
                           name={pdf.name}
                           tags={pdf.tags}
                           createdAt={pdf.created_at}
                           pdfName={pdf.file_name}
-                          onClick={() =>
-                            console.log('Navigate to PDF:', pdf.id)
-                          }
                         />
                       ))}
                   </>

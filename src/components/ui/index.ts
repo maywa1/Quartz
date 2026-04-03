@@ -4,6 +4,7 @@
 //  import "@quartz-ui/react/styles"          ← global CSS tokens
 // ─────────────────────────────────────────────────────────────
 
+
 // Components
 export { Badge } from './Badge'
 export { Button } from './Button'
@@ -19,6 +20,7 @@ export { Tabs } from './Tabs'
 export { Textarea } from './Textarea'
 export { Tooltip } from './Tooltip'
 export { Text, Divider } from './Typography'
+export { ResizablePanel, ResizableHandle, ResizablePanelGroup } from './Resizable'
 
 // Types
 export type { CardProps } from './Card'
