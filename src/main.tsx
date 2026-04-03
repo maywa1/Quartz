@@ -2,7 +2,12 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { RouterProvider } from '@tanstack/react-router'
 import { getRouter } from '#/router'
-import { QueryProvider, DatabaseProvider, ToastProvider } from '#/providers'
+import {
+  QueryProvider,
+  DatabaseProvider,
+  ToastProvider,
+  WorkspaceProvider,
+} from '#/providers'
 
 import '#/styles.css'
 
@@ -25,7 +30,9 @@ if (!rootElement.innerHTML) {
       <ToastProvider>
         <QueryProvider>
           <DatabaseProvider dbName="app.db">
-            <RouterProvider router={router} />
+            <WorkspaceProvider>
+              <RouterProvider router={router} />
+            </WorkspaceProvider>
           </DatabaseProvider>
         </QueryProvider>
       </ToastProvider>

@@ -1,4 +1,4 @@
-import { defaultShapeUtils, createTLStore } from "tldraw"
+import { defaultShapeUtils, createTLStore } from 'tldraw'
 
 export class FileStorage {
   private static async getOpfsRoot(): Promise<FileSystemDirectoryHandle> {
@@ -30,14 +30,42 @@ export class FileStorage {
 
   static async read(path: string): Promise<ArrayBuffer> {
     const root = await this.getOpfsRoot()
-    const fileHandle = await root.getFileHandle(path)
+    const parts = path.split('/').filter(Boolean)
+
+    if (parts.length === 1) {
+      const fileHandle = await root.getFileHandle(parts[0])
+      const file = await fileHandle.getFile()
+      return file.arrayBuffer()
+    }
+
+    let dir: FileSystemDirectoryHandle = root
+    for (let i = 0; i < parts.length - 1; i++) {
+      dir = await dir.getDirectoryHandle(parts[i])
+    }
+
+    const fileName = parts[parts.length - 1]
+    const fileHandle = await dir.getFileHandle(fileName)
     const file = await fileHandle.getFile()
     return file.arrayBuffer()
   }
 
   static async readAsText(path: string): Promise<string> {
     const root = await this.getOpfsRoot()
-    const fileHandle = await root.getFileHandle(path)
+    const parts = path.split('/').filter(Boolean)
+
+    if (parts.length === 1) {
+      const fileHandle = await root.getFileHandle(parts[0])
+      const file = await fileHandle.getFile()
+      return file.text()
+    }
+
+    let dir: FileSystemDirectoryHandle = root
+    for (let i = 0; i < parts.length - 1; i++) {
+      dir = await dir.getDirectoryHandle(parts[i])
+    }
+
+    const fileName = parts[parts.length - 1]
+    const fileHandle = await dir.getFileHandle(fileName)
     const file = await fileHandle.getFile()
     return file.text()
   }
@@ -45,7 +73,19 @@ export class FileStorage {
   static async exists(path: string): Promise<boolean> {
     try {
       const root = await this.getOpfsRoot()
-      await root.getFileHandle(path)
+      const parts = path.split('/').filter(Boolean)
+
+      if (parts.length === 1) {
+        await root.getFileHandle(parts[0])
+        return true
+      }
+
+      let dir: FileSystemDirectoryHandle = root
+      for (let i = 0; i < parts.length - 1; i++) {
+        dir = await dir.getDirectoryHandle(parts[i])
+      }
+
+      await dir.getFileHandle(parts[parts.length - 1])
       return true
     } catch {
       return false
@@ -62,6 +102,11 @@ export class FileStorage {
     }
 
     await dir.removeEntry(parts[parts.length - 1])
+  }
+
+  static async deleteDir(id: string): Promise<void> {
+    const root = await this.getOpfsRoot()
+    await root.removeEntry(id, { recursive: true })
   }
 
   static buildNotePath(id: string): string {

@@ -106,8 +106,13 @@ export function useCreateNote() {
 
       return id
     },
-    onSuccess: () => {
+    onSuccess: (_, { pdfId }) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.notes.list })
+      if (pdfId) {
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.notes.byPdf(pdfId),
+        })
+      }
     },
   })
 }

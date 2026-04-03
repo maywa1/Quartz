@@ -4,7 +4,6 @@
 //  import "@quartz-ui/react/styles"          ← global CSS tokens
 // ─────────────────────────────────────────────────────────────
 
-
 // Components
 export { Badge } from './Badge'
 export { Button } from './Button'
@@ -12,6 +11,7 @@ export { Card } from './Card'
 export { Callout } from './Callout'
 export { Checkbox } from './Checkbox'
 export { Input } from './Input'
+export { Loading, Spinner } from './Spinner'
 export { MathBlock, Formula } from './MathBlock'
 export { Progress } from './Progress'
 export { Select } from './Select'
@@ -20,7 +20,11 @@ export { Tabs } from './Tabs'
 export { Textarea } from './Textarea'
 export { Tooltip } from './Tooltip'
 export { Text, Divider } from './Typography'
-export { ResizablePanel, ResizableHandle, ResizablePanelGroup } from './Resizable'
+export {
+  ResizablePanel,
+  ResizableHandle,
+  ResizablePanelGroup,
+} from './Resizable'
 
 // Types
 export type { CardProps } from './Card'

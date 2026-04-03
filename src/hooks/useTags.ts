@@ -56,6 +56,8 @@ export function useCreateTag() {
     mutationFn: (name: string) => db.tags.create(name),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.tags.all })
+      queryClient.invalidateQueries({ queryKey: queryKeys.tags.allNoteTags })
+      queryClient.invalidateQueries({ queryKey: queryKeys.tags.allPdfTags })
     },
   })
 }
@@ -97,6 +99,9 @@ export function useAddTagToNote() {
       queryClient.invalidateQueries({
         queryKey: queryKeys.tags.forNote(noteId),
       })
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.tags.allNoteTags,
+      })
     },
   })
 }
@@ -112,6 +117,9 @@ export function useRemoveTagFromNote() {
       queryClient.invalidateQueries({
         queryKey: queryKeys.tags.forNote(noteId),
       })
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.tags.allNoteTags,
+      })
     },
   })
 }
@@ -125,6 +133,7 @@ export function useAddTagToPdf() {
       db.tags.addTagToPdf(tagId, pdfId),
     onSuccess: (_, { pdfId }) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.tags.forPdf(pdfId) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.tags.allPdfTags })
     },
   })
 }
@@ -138,6 +147,7 @@ export function useRemoveTagFromPdf() {
       db.tags.removeTagFromPdf(tagId, pdfId),
     onSuccess: (_, { pdfId }) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.tags.forPdf(pdfId) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.tags.allPdfTags })
     },
   })
 }

@@ -1,10 +1,11 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState, useEffect } from 'react'
 import { useDatabase } from '#/providers'
+import { useWorkspace } from '#/context/WorkspaceContext'
 import type { Note, PDF } from '#/types/types'
 import { Canvas } from './-components/Canvas'
 import { NoteNotFound } from './-components/NoteNotFound'
-import { PdfWaiting } from './-components/PdfWaiting'
+import PdfViewer from './-components/PdfViewer'
 import {
   ResizablePanelGroup,
   ResizablePanel,
@@ -35,6 +36,7 @@ function Workspace() {
   const { docId } = Route.useParams()
   const [workspaceData, setWorkspaceData] = useState<WorkspaceData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const { activeNoteId, setActiveNoteId } = useWorkspace()
 
   useEffect(() => {
     async function loadData() {
@@ -58,6 +60,7 @@ function Workspace() {
       if (pdf) {
         setWorkspaceData({ type: 'pdf', data: pdf } as PdfData)
         setIsLoading(false)
+        setActiveNoteId(null)
         return
       }
 
@@ -66,7 +69,7 @@ function Workspace() {
     }
 
     loadData()
-  }, [docId])
+  }, [docId, setActiveNoteId])
 
   if (isLoading || !workspaceData) {
     return (
@@ -84,13 +87,15 @@ function Workspace() {
 
   if (workspaceData.type === 'pdf') {
     return (
-      <ResizablePanelGroup orientation="horizontal">
+      <ResizablePanelGroup orientation="horizontal" className="h-screen">
         <ResizablePanel defaultSize={50} minSize={0}>
-          <NoteNotFound />
+          <div className="h-full bg-[var(--q-bg)]">
+            {activeNoteId ? <Canvas noteId={activeNoteId} /> : <NoteNotFound />}
+          </div>
         </ResizablePanel>
         <ResizableHandle withHandle />
         <ResizablePanel defaultSize={50} minSize={0}>
-          <PdfWaiting pdf={workspaceData.data} />
+          <PdfViewer pdf={workspaceData.data} />
         </ResizablePanel>
       </ResizablePanelGroup>
     )
