@@ -3,6 +3,7 @@ import { PdfRepository } from './repositories/PdfRepository'
 import { NoteRepository } from './repositories/NoteRepository'
 import { TagRepository } from './repositories/TagRepository'
 import { SettingsRepository } from './repositories/SettingsRepository'
+import { SCHEMA_VERSION } from '#/utils/config'
 import type { Statistics } from '#/types/types'
 
 export class DatabaseController {
@@ -29,7 +30,7 @@ export class DatabaseController {
     await db.open()
 
     DatabaseController.instance = new DatabaseController(db)
-    await DatabaseController.instance.initializeTables()
+    await DatabaseController.instance.runMigrations()
 
     return DatabaseController.instance
   }
@@ -67,6 +68,20 @@ export class DatabaseController {
 
   async close(): Promise<void> {
     await this.db.close()
+  }
+
+  private async runMigrations(): Promise<void> {
+    await this.db.exec('PRAGMA foreign_keys = ON')
+
+    const currentVersion = await this.db.get<{ user_version: number }>(
+      'PRAGMA user_version',
+    )
+    const current = currentVersion?.user_version ?? 0
+
+    if (current < SCHEMA_VERSION) {
+      await this.initializeTables()
+      await this.db.run(`PRAGMA user_version = ${SCHEMA_VERSION}`)
+    }
   }
 
   private async initializeTables(): Promise<void> {

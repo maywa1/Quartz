@@ -1,5 +1,5 @@
 import * as SQLite from 'wa-sqlite'
-import SQLiteESMFactory from 'wa-sqlite/dist/wa-sqlite.mjs'  // ← sync build, NOT wa-sqlite-async
+import SQLiteESMFactory from 'wa-sqlite/dist/wa-sqlite.mjs' // ← sync build, NOT wa-sqlite-async
 import { AccessHandlePoolVFS } from 'wa-sqlite/src/examples/AccessHandlePoolVFS.js'
 
 export interface RunResult {
@@ -21,14 +21,14 @@ export class Database {
       locateFile: (file: string) => `/${file}`,
     })
     this.sqlite3 = SQLite.Factory(module)
-    const vfs = new AccessHandlePoolVFS('/')   // directory path in OPFS
-    await vfs.isReady                           // must await before registering
+    const vfs = new AccessHandlePoolVFS('/') // directory path in OPFS
+    await vfs.isReady // must await before registering
     // @ts-ignore
     this.sqlite3.vfs_register(vfs, true)
     this.db = await this.sqlite3.open_v2(
       this.dbName,
       SQLite.SQLITE_OPEN_READWRITE | SQLite.SQLITE_OPEN_CREATE,
-      'AccessHandlePool',   // ← must match vfs.name getter exactly
+      'AccessHandlePool', // ← must match vfs.name getter exactly
     )
   }
 

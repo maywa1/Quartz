@@ -108,11 +108,11 @@ export class FileStorage {
     const root = await this.getOpfsRoot()
     await root.removeEntry(id, { recursive: true })
   }
-
-  static buildNotePath(id: string): string {
-    return `${id}/note.tldr`
-  }
-
+  //
+  // static buildNotePath(id: string): string {
+  //   return `${id}/note.tldr`
+  // }
+  //
   static buildPdfPath(id: string): string {
     return `${id}/document.pdf`
   }

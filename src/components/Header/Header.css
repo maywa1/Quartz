@@ -12,10 +12,53 @@
   gap: 0.6rem;
 }
 
+.q-header__logo-link {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-decoration: none;
+  color: inherit;
+}
+
 .q-header__logo-icon {
   width: 1.75rem;
   height: 1.75rem;
   color: var(--q-green-mid);
+}
+
+.q-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-right: 1.5rem;
+}
+
+.q-header__settings {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  background: var(--q-green-pale);
+  border: 1px solid var(--q-border);
+  border-radius: var(--q-radius-sm);
+  cursor: pointer;
+  color: var(--q-text);
+  text-decoration: none;
+  transition:
+    background var(--q-transition),
+    border-color var(--q-transition);
+}
+
+.q-header__settings:hover {
+  background: var(--q-green-lite);
+  border-color: var(--q-green-mid);
+}
+
+.q-header__settings:focus-visible {
+  outline: 2px solid var(--q-green-mid);
+  outline-offset: 2px;
 }
 
 .q-header__toggle {

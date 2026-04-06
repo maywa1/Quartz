@@ -15,7 +15,7 @@ export function Canvas({ noteId, note: noteProp }: CanvasProps) {
   if (!note) {
     return (
       <div className="quartz h-screen w-full flex items-center justify-center">
-        <span className="text-[var(--q-text-muted)]">Loading note...</span>
+        <span className="text-(--q-text-muted)">Loading note...</span>
       </div>
     )
   }

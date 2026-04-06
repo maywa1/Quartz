@@ -9,10 +9,16 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SettingsRouteRouteImport } from './routes/settings/route'
 import { Route as AboutRouteRouteImport } from './routes/about/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as WorkspaceDocIdRouteImport } from './routes/workspace/$docId'
 
+const SettingsRouteRoute = SettingsRouteRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AboutRouteRoute = AboutRouteRouteImport.update({
   id: '/about',
   path: '/about',
@@ -32,35 +38,46 @@ const WorkspaceDocIdRoute = WorkspaceDocIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRouteRoute
+  '/settings': typeof SettingsRouteRoute
   '/workspace/$docId': typeof WorkspaceDocIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRouteRoute
+  '/settings': typeof SettingsRouteRoute
   '/workspace/$docId': typeof WorkspaceDocIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRouteRoute
+  '/settings': typeof SettingsRouteRoute
   '/workspace/$docId': typeof WorkspaceDocIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/workspace/$docId'
+  fullPaths: '/' | '/about' | '/settings' | '/workspace/$docId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/workspace/$docId'
-  id: '__root__' | '/' | '/about' | '/workspace/$docId'
+  to: '/' | '/about' | '/settings' | '/workspace/$docId'
+  id: '__root__' | '/' | '/about' | '/settings' | '/workspace/$docId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRouteRoute: typeof AboutRouteRoute
+  SettingsRouteRoute: typeof SettingsRouteRoute
   WorkspaceDocIdRoute: typeof WorkspaceDocIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/about': {
       id: '/about'
       path: '/about'
@@ -88,6 +105,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRouteRoute: AboutRouteRoute,
+  SettingsRouteRoute: SettingsRouteRoute,
   WorkspaceDocIdRoute: WorkspaceDocIdRoute,
 }
 export const routeTree = rootRouteImport

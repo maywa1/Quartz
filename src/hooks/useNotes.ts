@@ -2,7 +2,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import type { Note } from '#/types/types'
 import { useDatabase } from '#/providers'
 import { queryKeys } from './queryKeys'
-import { FileStorage, DEFAULT_TLDRAW_CONTENT } from '#/lib/FileStorage'
 
 export interface CreateNoteParams {
   name: string
@@ -100,9 +99,9 @@ export function useCreateNote() {
   return useMutation({
     mutationFn: async ({ name, pdfId, coordinates }: CreateNoteParams) => {
       const id = await db.notes.create(name, pdfId, coordinates)
-
-      const path = FileStorage.buildNotePath(id)
-      await FileStorage.write(path, DEFAULT_TLDRAW_CONTENT)
+      //
+      // const path = FileStorage.buildNotePath(id)
+      // await FileStorage.write(path, DEFAULT_TLDRAW_CONTENT)
 
       return id
     },
