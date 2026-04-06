@@ -48,7 +48,7 @@ export function SettingsRow({
           </span>
         )}
       </div>
-      <div className={stacked ? "w-full" : "flex-shrink-0"}>
+      <div className={stacked ? "w-full" : "shrink-0"}>
         {children}
       </div>
     </div>

@@ -25,7 +25,7 @@ export function AboutPanel() {
 
       {/* Identity */}
       <div className="flex items-center gap-4">
-        <div className="w-12 h-12 rounded-2xl bg-[--q-green-pale] border border-[--q-border] flex items-center justify-center flex-shrink-0">
+        <div className="w-12 h-12 rounded-2xl bg-[--q-green-pale] border border-[--q-border] flex items-center justify-center shrink-0">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <polygon
               points="12,2 20,7 20,17 12,22 4,17 4,7"

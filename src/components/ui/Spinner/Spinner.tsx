@@ -7,16 +7,16 @@ interface SpinnerProps {
 
 const sizeClasses = {
   sm: 'q-spinner--sm',
-  md: 'q-spinner--md',
+  md: '',
   lg: 'q-spinner--lg',
 }
 
 export function Spinner({ size = 'md', className }: SpinnerProps) {
   return (
     <div className={cn('q-spinner', sizeClasses[size], className)}>
-      <div className="q-spinner__dot" />
-      <div className="q-spinner__dot" />
-      <div className="q-spinner__dot" />
+      <div className="q-spinner__bar" />
+      <div className="q-spinner__bar" />
+      <div className="q-spinner__bar" />
     </div>
   )
 }

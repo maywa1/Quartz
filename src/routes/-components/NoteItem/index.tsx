@@ -135,8 +135,8 @@ export function NoteItem({
     if (!confirm(`Are you sure you want to delete "${name}"?`)) return
 
     try {
-      await FileStorage.deleteDir(id)
       if (isPdf) {
+        await FileStorage.deleteDir(id)
         await deletePdfMutation.mutateAsync(id)
       } else {
         await deleteNoteMutation.mutateAsync(id)

@@ -68,6 +68,10 @@ export function useSearchNotes(query: string) {
 export function useNote(id: string) {
   const db = useDatabase()
 
+    if (!id) {
+    return { data: null, isLoading: true }
+  }
+
   return useQuery({
     queryKey: queryKeys.notes.detail(id),
     queryFn: () => db.notes.findById(id),
@@ -130,12 +134,55 @@ export function useUpdateNote() {
   })
 }
 
+async function deleteTldrawDocument(drawingId: string): Promise<boolean> {
+  if (!drawingId) {
+    throw new Error('drawingId is required')
+  }
+
+  const patterns = [
+    drawingId,
+    `tl${drawingId}`,
+    `TLDRAW_DOCUMENT_v2${drawingId}`,
+  ]
+
+  const databases = await indexedDB.databases()
+
+  const targets = databases
+    .map(db => db.name)
+    .filter((name): name is string =>
+      !!name && patterns.some(pattern => name === pattern)
+    )
+
+  if (targets.length === 0) return false
+
+  console.log(targets)
+  await Promise.allSettled(
+    targets.map(name => {
+      return new Promise<void>((resolve, reject) => {
+        const req = indexedDB.deleteDatabase(name)
+
+        req.onsuccess = () => resolve()
+        req.onerror = () => reject(req.error)
+        req.onblocked = () => {
+          console.warn(`Delete blocked for DB: ${name}`)
+          resolve()
+        }
+      })
+    })
+  )
+
+  return true
+}
+
 export function useDeleteNote() {
   const db = useDatabase()
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (id: string) => db.notes.delete(id),
+    mutationFn: async (id: string) => {
+      await deleteTldrawDocument(id)
+      await db.notes.delete(id)
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.notes.all })
     },
