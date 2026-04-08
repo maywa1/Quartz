@@ -57,15 +57,17 @@
 
 /* ── Section wrapper ────────────────────── */
 .q-section {
-    padding: 3rem 0;
-    border-bottom: 1px solid var(--q-border);
+  padding: 3rem 0;
+  border-bottom: 1px solid var(--q-border);
 }
-.q-section:last-child { border-bottom: none; }
+.q-section:last-child {
+  border-bottom: none;
+}
 .q-section-label {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.72rem;
-    font-weight: 500;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--q-green-mid);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--q-green-mid);
 }

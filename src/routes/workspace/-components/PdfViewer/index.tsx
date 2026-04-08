@@ -5,8 +5,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { useNotesByPdf, useCreateNote } from '#/hooks'
 import { FileStorage } from '#/lib/FileStorage'
 import { useWorkspace } from '#/context/WorkspaceContext'
-import { Dialog } from '#/components/ui/Dialog/Dialog'
-import { Input } from '#/components/ui/Input/Input'
+import { PromptDialog } from '#/components/ui/Dialog'
 import { Button } from '#/components/ui/Button/Button'
 import type { PDF, Note } from '#/types/types'
 
@@ -363,16 +362,15 @@ export default function PdfViewer({ pdf, initialPage }: Props) {
         </div>
       </div>
 
-      <Dialog
+      <PromptDialog
         isOpen={showNoteDialog}
         onClose={() => setShowNoteDialog(false)}
         title="Create Note"
-      >
-        <NoteForm
-          onSubmit={handleNoteSubmit}
-          onCancel={() => setShowNoteDialog(false)}
-        />
-      </Dialog>
+        label="Note name"
+        placeholder="Enter note name"
+        confirmText="Create"
+        onConfirm={handleNoteSubmit}
+      />
     </PieMenuWrapper>
   )
 }
@@ -649,41 +647,5 @@ function PieMenuWrapper({ items, children }: PieMenuWrapperProps) {
         </div>
       )}
     </div>
-  )
-}
-
-interface NoteFormProps {
-  onSubmit: (name: string) => void
-  onCancel: () => void
-}
-
-function NoteForm({ onSubmit, onCancel }: NoteFormProps) {
-  const [name, setName] = useState('')
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (name.trim()) {
-      onSubmit(name.trim())
-    }
-  }
-
-  return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-      <Input
-        label="Note name"
-        placeholder="Enter note name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        autoFocus
-      />
-      <div className="flex gap-2 justify-end">
-        <Button type="button" variant="secondary" onClick={onCancel}>
-          Cancel
-        </Button>
-        <Button type="submit" disabled={!name.trim()}>
-          Create
-        </Button>
-      </div>
-    </form>
   )
 }

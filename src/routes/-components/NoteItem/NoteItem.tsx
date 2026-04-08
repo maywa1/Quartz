@@ -25,7 +25,7 @@ import { useNoteItemMenu } from './hooks/UseNoteItemMenu'
 import { useNoteItemEdit } from './hooks/useNoteItemEdit'
 import { useNoteItemTags } from './hooks/UseNoteItemTags'
 import { useState } from 'react'
-import "./NoteItem.css"
+import './NoteItem.css'
 
 export interface NoteItemProps {
   id: string
@@ -179,7 +179,7 @@ export function NoteItem({
           )}
 
           <div className="q-note-item__title-actions">
-            {viewLater && !edit.editing && (
+            {!!viewLater && !edit.editing && (
               <span
                 className="q-note-item__view-later"
                 aria-label="Saved for later"

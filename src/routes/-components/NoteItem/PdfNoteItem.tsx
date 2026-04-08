@@ -149,7 +149,7 @@ export function PdfNoteItem({
             <span className="q-pdf-note-item__title">{name}</span>
           )}
           <div className="q-pdf-note-item__title-actions">
-            {viewLater && (
+            {!!viewLater && (
               <span
                 className="q-pdf-note-item__view-later"
                 aria-label="Saved for later"
