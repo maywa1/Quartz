@@ -37,6 +37,7 @@ function Workspace() {
   const [workspaceData, setWorkspaceData] = useState<WorkspaceData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const { activeNoteId, setActiveNoteId } = useWorkspace()
+  const [initialPage, setInitialPage] = useState<number|undefined>()
 
   useEffect(() => {
     async function loadData() {
@@ -52,6 +53,7 @@ function Workspace() {
       const note = await db.notes.findById(docId)
       if (note) {
         setWorkspaceData({ type: 'note', data: note } as NoteData)
+        setInitialPage(note.pdf_page)
         setIsLoading(false)
         return
       }
@@ -95,7 +97,7 @@ function Workspace() {
         </ResizablePanel>
         <ResizableHandle withHandle />
         <ResizablePanel defaultSize={50} minSize={0}>
-          <PdfViewer pdf={workspaceData.data} />
+          <PdfViewer pdf={workspaceData.data} initialPage={initialPage}/>
         </ResizablePanel>
       </ResizablePanelGroup>
     )

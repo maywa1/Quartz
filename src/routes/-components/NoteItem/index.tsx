@@ -7,7 +7,7 @@ import {
   type MouseEvent,
 } from 'react'
 import { useNavigate } from '@tanstack/react-router'
-import { MoreHorizontal, Trash2, Edit3, Tag, Plus, X } from 'lucide-react'
+import { MoreHorizontal, Trash2, Edit3, Tag, Plus, X, FileText } from 'lucide-react'
 import { cn } from '#/components/ui/cn'
 import { Badge } from '#/components/ui'
 import {
@@ -41,12 +41,10 @@ function formatDate(dateString?: string): string {
   if (!dateString) return ''
   const date = new Date(dateString)
   const now = new Date()
-  const diff = now.getTime() - date.getTime()
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24))
-
-  if (days === 0) return 'Today'
-  if (days === 1) return 'Yesterday'
-  if (days < 7) return `${days} days ago`
+  const diffDays = Math.floor((now.getTime() - date.getTime()) / 86_400_000)
+  if (diffDays === 0) return 'Today'
+  if (diffDays === 1) return 'Yesterday'
+  if (diffDays < 7) return `${diffDays}d ago`
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
@@ -70,167 +68,113 @@ export function NoteItem({
   const menuRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const updateNoteMutation = useUpdateNote()
-  const deleteNoteMutation = useDeleteNote()
-  const updatePdfMutation = useUpdatePdf()
-  const deletePdfMutation = useDeletePdf()
-  const tagsQuery = useTags()
-  const createTagMutation = useCreateTag()
-  const addTagToNoteMutation = useAddTagToNote()
-  const removeTagFromNoteMutation = useRemoveTagFromNote()
-  const addTagToPdfMutation = useAddTagToPdf()
-  const removeTagFromPdfMutation = useRemoveTagFromPdf()
+  const updateNote = useUpdateNote()
+  const deleteNote = useDeleteNote()
+  const updatePdf = useUpdatePdf()
+  const deletePdf = useDeletePdf()
+  const { data: allTags = [] } = useTags()
+  const createTag = useCreateTag()
+  const addTagToNote = useAddTagToNote()
+  const removeTagFromNote = useRemoveTagFromNote()
+  const addTagToPdf = useAddTagToPdf()
+  const removeTagFromPdf = useRemoveTagFromPdf()
 
-  const allTags = tagsQuery.data ?? []
   const isPdf = !!pdfName
-  const tagIds = new Set(tags.map((t) => t.id))
+  const tagIds = useMemo(() => new Set(tags.map((t) => t.id)), [tags])
+  const displayTags = useMemo(() => tags.slice(0, 10), [tags])
+  const remainingCount = tags.length - 10
+
+  // ── Navigation ─────────────────────────────────────────────
+  function handleClick() {
+    if (onClick) { onClick(); return }
+    navigate({ to: '/workspace/$docId', params: { docId: id } })
+  }
 
   function handleKeyDown(e: KeyboardEvent<HTMLDivElement>) {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault()
-      onClick?.()
-    }
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick?.() }
   }
 
-  const handleClick = () => {
-    if (onClick) {
-      onClick()
-    } else {
-      navigate({ to: '/workspace/$docId', params: { docId: id } })
-    }
-  }
-
-  const handleContextMenu = (e: MouseEvent) => {
-    e.preventDefault()
-    setMenuPos({ x: e.clientX, y: e.clientY })
+  function openMenu(x: number, y: number) {
+    setMenuPos({ x, y })
     setMenuOpen(true)
+    setTagMenuOpen(false)
   }
 
-  const handleRename = async () => {
-    if (!editName.trim() || editName === name) {
-      setEditing(false)
-      setEditName(name)
-      return
-    }
+  function handleContextMenu(e: MouseEvent) {
+    e.preventDefault()
+    openMenu(e.clientX, e.clientY)
+  }
 
+  // ── Rename ─────────────────────────────────────────────────
+  useEffect(() => {
+    if (editing) inputRef.current?.focus()
+  }, [editing])
+
+  async function handleRename() {
+    const trimmed = editName.trim()
+    if (!trimmed || trimmed === name) { setEditing(false); setEditName(name); return }
     try {
-      if (isPdf) {
-        await updatePdfMutation.mutateAsync({
-          id,
-          updates: { name: editName.trim() },
-        })
-      } else {
-        await updateNoteMutation.mutateAsync({
-          id,
-          updates: { name: editName.trim() },
-        })
-      }
-    } catch (err) {
-      console.error('Failed to rename:', err)
-    }
+      if (isPdf) await updatePdf.mutateAsync({ id, updates: { name: trimmed } })
+      else await updateNote.mutateAsync({ id, updates: { name: trimmed } })
+    } catch { /* silent */ }
     setEditing(false)
   }
 
-  const handleDelete = async () => {
-    if (!confirm(`Are you sure you want to delete "${name}"?`)) return
-
+  // ── Delete ─────────────────────────────────────────────────
+  async function handleDelete() {
+    if (!confirm(`Delete "${name}"?`)) return
     try {
-      if (isPdf) {
-        await FileStorage.deleteDir(id)
-        await deletePdfMutation.mutateAsync(id)
-      } else {
-        await deleteNoteMutation.mutateAsync(id)
-      }
-    } catch (err) {
-      console.error('Failed to delete:', err)
-    }
+      if (isPdf) { await FileStorage.deleteDir(id); await deletePdf.mutateAsync(id) }
+      else await deleteNote.mutateAsync(id)
+    } catch { /* silent */ }
     setMenuOpen(false)
   }
 
-  const handleToggleTag = async (tag: TagType) => {
+  // ── Tags ───────────────────────────────────────────────────
+  async function handleToggleTag(tag: TagType) {
+    const has = tagIds.has(tag.id)
     try {
       if (isPdf) {
-        if (tagIds.has(tag.id)) {
-          await removeTagFromPdfMutation.mutateAsync({
-            tagId: tag.id,
-            pdfId: id,
-          })
-        } else {
-          await addTagToPdfMutation.mutateAsync({ tagId: tag.id, pdfId: id })
-        }
+        has
+          ? await removeTagFromPdf.mutateAsync({ tagId: tag.id, pdfId: id })
+          : await addTagToPdf.mutateAsync({ tagId: tag.id, pdfId: id })
       } else {
-        if (tagIds.has(tag.id)) {
-          await removeTagFromNoteMutation.mutateAsync({
-            tagId: tag.id,
-            noteId: id,
-          })
-        } else {
-          await addTagToNoteMutation.mutateAsync({ tagId: tag.id, noteId: id })
-        }
+        has
+          ? await removeTagFromNote.mutateAsync({ tagId: tag.id, noteId: id })
+          : await addTagToNote.mutateAsync({ tagId: tag.id, noteId: id })
       }
-    } catch (err) {
-      console.error('Failed to toggle tag:', err)
-    }
+    } catch { /* silent */ }
   }
 
-  const handleCreateTag = async () => {
+  async function handleCreateTag() {
     if (!newTagName.trim()) return
-
     try {
-      const tagId = await createTagMutation.mutateAsync(newTagName.trim())
-      if (isPdf) {
-        await addTagToPdfMutation.mutateAsync({ tagId, pdfId: id })
-      } else {
-        await addTagToNoteMutation.mutateAsync({ tagId, noteId: id })
-      }
+      const tagId = await createTag.mutateAsync(newTagName.trim())
+      if (isPdf) await addTagToPdf.mutateAsync({ tagId, pdfId: id })
+      else await addTagToNote.mutateAsync({ tagId, noteId: id })
       setNewTagName('')
-    } catch (err) {
-      console.error('Failed to create tag:', err)
-    }
+    } catch { /* silent */ }
   }
 
-  const startEditing = () => {
-    setEditing(true)
-    setEditName(name)
-    setMenuOpen(false)
-  }
-
+  // ── Click-outside for menus ────────────────────────────────
   useEffect(() => {
-    if (editing && inputRef.current) {
-      inputRef.current.focus()
-      inputRef.current.select()
-    }
-  }, [editing])
-
-  useEffect(() => {
-    const handleClickOutside = (e: globalThis.MouseEvent) => {
+    function onClickOutside(e: globalThis.MouseEvent) {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         setMenuOpen(false)
         setTagMenuOpen(false)
       }
     }
-
-    if (menuOpen || tagMenuOpen) {
-      document.addEventListener('click', handleClickOutside)
-    }
-    return () => document.removeEventListener('click', handleClickOutside)
+    if (menuOpen || tagMenuOpen) document.addEventListener('click', onClickOutside)
+    return () => document.removeEventListener('click', onClickOutside)
   }, [menuOpen, tagMenuOpen])
 
   useEffect(() => {
-    const handleKeyDown = (e: globalThis.KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setEditing(false)
-        setEditName(name)
-      }
+    function onEsc(e: globalThis.KeyboardEvent) {
+      if (e.key === 'Escape') { setEditing(false); setEditName(name) }
     }
-    if (editing) {
-      window.addEventListener('keydown', handleKeyDown)
-    }
-    return () => window.removeEventListener('keydown', handleKeyDown)
+    if (editing) window.addEventListener('keydown', onEsc)
+    return () => window.removeEventListener('keydown', onEsc)
   }, [editing, name])
-
-  const displayTags = useMemo(() => tags.slice(0, 3), [tags])
-  const remainingCount = tags.length - 3
 
   return (
     <>
@@ -238,15 +182,12 @@ export function NoteItem({
         role="button"
         tabIndex={0}
         aria-current={active ? 'page' : undefined}
-        className={cn(
-          'q-note-item',
-          active && 'q-note-item--active',
-          className,
-        )}
+        className={cn('q-note-item', active && 'q-note-item--active', className)}
         onClick={editing ? undefined : handleClick}
         onKeyDown={handleKeyDown}
         onContextMenu={handleContextMenu}
       >
+        {/* Title row */}
         <div className="q-note-item__title-row">
           {editing ? (
             <input
@@ -264,22 +205,26 @@ export function NoteItem({
           ) : (
             <span className="q-note-item__title">{name}</span>
           )}
+
           <button
             className="q-note-item__menu-btn"
+            aria-label="More options"
             onClick={(e) => {
               e.stopPropagation()
-              const rect = e.currentTarget.getBoundingClientRect()
-              setMenuPos({ x: rect.left, y: rect.bottom + 4 })
-              setMenuOpen(true)
+              const r = e.currentTarget.getBoundingClientRect()
+              openMenu(r.left, r.bottom + 4)
             }}
           >
-            <MoreHorizontal className="w-4 h-4" />
+            <MoreHorizontal size={15} strokeWidth={1.75} />
           </button>
         </div>
+
+        {/* Meta row */}
         {(displayTags.length > 0 || createdAt || pdfName) && (
           <div className="q-note-item__meta">
             {pdfName && (
               <Badge variant="outline" className="q-note-item__pdf">
+                <FileText size={9} strokeWidth={2} />
                 PDF
               </Badge>
             )}
@@ -300,52 +245,65 @@ export function NoteItem({
         )}
       </div>
 
+      {/* Context menu */}
       {menuOpen && (
         <div
           ref={menuRef}
           className="q-note-item__menu"
           style={{ left: menuPos.x, top: menuPos.y }}
+          role="menu"
         >
-          <button className="q-note-item__menu-item" onClick={startEditing}>
-            <Edit3 className="w-4 h-4" />
+          <button
+            className="q-note-item__menu-item"
+            role="menuitem"
+            onClick={() => { setEditing(true); setEditName(name); setMenuOpen(false) }}
+          >
+            <Edit3 size={13} strokeWidth={1.75} />
             Rename
           </button>
           <button
             className="q-note-item__menu-item"
-            onClick={(e) => {
-              e.stopPropagation()
-              setMenuOpen(false)
-              setTagMenuOpen(true)
-            }}
+            role="menuitem"
+            onClick={(e) => { e.stopPropagation(); setMenuOpen(false); setTagMenuOpen(true) }}
           >
-            <Tag className="w-4 h-4" />
+            <Tag size={13} strokeWidth={1.75} />
             Manage Tags
           </button>
+          <div className="q-note-item__menu-divider" />
           <button
             className="q-note-item__menu-item q-note-item__menu-item--danger"
+            role="menuitem"
             onClick={handleDelete}
           >
-            <Trash2 className="w-4 h-4" />
+            <Trash2 size={13} strokeWidth={1.75} />
             Delete
           </button>
         </div>
       )}
 
+      {/* Tag menu */}
       {tagMenuOpen && (
         <div
           className="q-note-item__menu q-note-item__tag-menu"
           style={{ left: menuPos.x, top: menuPos.y }}
+          role="dialog"
+          aria-label="Manage tags"
         >
           <div className="q-note-item__tag-menu-header">
             <span className="q-note-item__tag-menu-title">Tags</span>
             <button
               className="q-note-item__tag-menu-close"
               onClick={() => setTagMenuOpen(false)}
+              aria-label="Close"
             >
-              <X className="w-4 h-4" />
+              <X size={13} strokeWidth={2} />
             </button>
           </div>
+
           <div className="q-note-item__tag-list">
+            {allTags.length === 0 && (
+              <p className="q-note-item__tag-empty">No tags yet</p>
+            )}
             {allTags.map((tag) => (
               <button
                 key={tag.id}
@@ -362,23 +320,24 @@ export function NoteItem({
               </button>
             ))}
           </div>
+
           <div className="q-note-item__tag-create">
             <input
               type="text"
-              placeholder="New tag..."
+              placeholder="New tag…"
               value={newTagName}
               onChange={(e) => setNewTagName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handleCreateTag()
-              }}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleCreateTag() }}
               className="q-note-item__tag-input"
+              aria-label="New tag name"
             />
             <button
               className="q-note-item__tag-add-btn"
               onClick={handleCreateTag}
               disabled={!newTagName.trim()}
+              aria-label="Add tag"
             >
-              <Plus className="w-4 h-4" />
+              <Plus size={13} strokeWidth={2} />
             </button>
           </div>
         </div>
