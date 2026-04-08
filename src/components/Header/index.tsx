@@ -56,14 +56,14 @@ export default function Header({ className }: HeaderProps) {
         >
           <Settings size={18} />
         </Link>
-
-        <button
-          className="q-header__toggle"
-          onClick={toggleTheme}
-          aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-        >
-          {isDark ? <Sun size={18} /> : <Moon size={18} />}
-        </button>
+        {/**/}
+        {/* <button */}
+        {/*   className="q-header__toggle" */}
+        {/*   onClick={toggleTheme} */}
+        {/*   aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'} */}
+        {/* > */}
+        {/*   {isDark ? <Sun size={18} /> : <Moon size={18} />} */}
+        {/* </button> */}
       </div>
     </header>
   )

@@ -75,6 +75,12 @@ export const SearchBar = forwardRef<SearchBarHandle, SearchBarProps>(
           onChange={handleChange}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') {
+              e.preventDefault()
+              inputRef.current?.blur()
+            }
+          }}
           placeholder={placeholder}
           autoFocus={autoFocus}
           aria-label="Search notes"

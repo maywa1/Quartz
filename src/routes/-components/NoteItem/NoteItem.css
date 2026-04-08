@@ -1,4 +1,3 @@
-/* ── Base item ────────────────────────────────────────────── */
 .q-note-item {
   display: flex;
   flex-direction: column;
@@ -9,6 +8,7 @@
   transition: background var(--q-transition);
   border: 1px solid transparent;
   outline: none;
+  user-select: none;
 }
 
 .q-note-item:hover {
@@ -29,21 +29,51 @@
 .q-note-item__title-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
+  gap: 0.4rem;
+}
+
+.q-note-item__expand-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  color: var(--q-text-muted);
+  transition: color var(--q-transition);
+  cursor: pointer;
+  border-radius: var(--q-radius-xs);
+}
+
+.q-note-item__expand-icon:hover {
+  color: var(--q-green-deep);
+  background: var(--q-green-pale);
+}
+
+.q-note-item:hover .q-note-item__expand-icon {
+  color: var(--q-green-deep);
 }
 
 .q-note-item__title {
+  flex: 1;
+  min-width: 0;
   font-family: var(--q-font-sans);
   font-size: 0.875rem;
   font-weight: 450;
   color: var(--q-text);
   line-height: 1.35;
-  flex: 1;
-  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.q-note-item__title--clickable {
+  cursor: pointer;
+  transition: color var(--q-transition);
+}
+
+.q-note-item__title--clickable:hover {
+  color: var(--q-green-deep);
 }
 
 .q-note-item__edit-input {
@@ -60,9 +90,28 @@
   box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.12);
 }
 
+.q-note-item__title-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  flex-shrink: 0;
+}
+
+/* ── View-later indicator ─────────────────────────────────── */
+.q-note-item__view-later {
+  display: flex;
+  align-items: center;
+  color: var(--q-green-mid);
+  opacity: 0.8;
+  transition: opacity var(--q-transition);
+}
+
+.q-note-item:hover .q-note-item__view-later {
+  opacity: 1;
+}
+
 /* ── Menu button ──────────────────────────────────────────── */
 .q-note-item__menu-btn {
-  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -75,7 +124,11 @@
   color: var(--q-text-muted);
   border-radius: var(--q-radius-sm);
   opacity: 0;
-  transition: opacity var(--q-transition), background var(--q-transition), color var(--q-transition);
+  transition:
+    opacity var(--q-transition),
+    background var(--q-transition),
+    color var(--q-transition);
+  flex-shrink: 0;
 }
 
 .q-note-item:hover .q-note-item__menu-btn,
@@ -117,6 +170,77 @@
   font-weight: 300;
 }
 
+/* ── PDF children ─────────────────────────────────────────── */
+.q-note-item__pdf-children {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-left: 1.5rem;
+  padding-left: 0.75rem;
+  border-left: 1.5px solid var(--q-border);
+  margin-bottom: 0.25rem;
+  animation: q-expand 0.15s ease;
+}
+
+@keyframes q-expand {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── PDF child note row ───────────────────────────────────── */
+.q-pdf-note-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: var(--q-radius-sm);
+  cursor: pointer;
+  outline: none;
+  transition: background var(--q-transition);
+  user-select: none;
+}
+
+.q-pdf-note-item:hover {
+  background: var(--q-green-pale);
+}
+
+.q-pdf-note-item:focus-visible {
+  outline: 2px solid var(--q-green-mid);
+  outline-offset: 1px;
+}
+
+.q-pdf-note-item__title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.q-pdf-note-item__title {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--q-font-sans);
+  font-size: 0.825rem;
+  font-weight: 400;
+  color: var(--q-text);
+  line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.q-pdf-note-item__view-later {
+  display: flex;
+  align-items: center;
+  color: var(--q-green-mid);
+  flex-shrink: 0;
+}
+
 /* ── Context menu ─────────────────────────────────────────── */
 .q-note-item__menu {
   position: fixed;
@@ -131,8 +255,14 @@
 }
 
 @keyframes q-menu-in {
-  from { opacity: 0; transform: scale(0.97) translateY(-3px); }
-  to   { opacity: 1; transform: scale(1) translateY(0); }
+  from {
+    opacity: 0;
+    transform: scale(0.97) translateY(-3px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 .q-note-item__menu-item {
@@ -156,14 +286,17 @@
 .q-note-item__menu-item:hover {
   background: var(--q-green-pale);
 }
-
-.q-note-item__menu-item--danger { color: var(--q-error); }
-.q-note-item__menu-item--danger:hover { background: #fef2f2; }
+.q-note-item__menu-item--danger {
+  color: var(--q-error);
+}
+.q-note-item__menu-item--danger:hover {
+  background: #fef2f2;
+}
 
 .q-note-item__menu-divider {
   height: 1px;
   background: var(--q-border);
-  margin: 0.3rem 0.3rem;
+  margin: 0.3rem;
 }
 
 /* ── Tag menu ─────────────────────────────────────────────── */
@@ -242,8 +375,12 @@
   transition: background var(--q-transition);
 }
 
-.q-note-item__tag-option:hover { background: var(--q-green-pale); }
-.q-note-item__tag-option--selected { background: var(--q-green-lite); }
+.q-note-item__tag-option:hover {
+  background: var(--q-green-pale);
+}
+.q-note-item__tag-option--selected {
+  background: var(--q-green-lite);
+}
 
 .q-note-item__tag-check {
   width: 14px;
@@ -256,7 +393,7 @@
 .q-note-item__tag-create {
   display: flex;
   gap: 0.3rem;
-  padding: 0.5rem 0.5rem 0.5rem;
+  padding: 0.5rem;
   border-top: 1px solid var(--q-border);
 }
 
@@ -273,7 +410,9 @@
   transition: border-color var(--q-transition);
 }
 
-.q-note-item__tag-input:focus { border-color: var(--q-green-mid); }
+.q-note-item__tag-input:focus {
+  border-color: var(--q-green-mid);
+}
 
 .q-note-item__tag-add-btn {
   display: flex;
@@ -291,5 +430,10 @@
   transition: background var(--q-transition);
 }
 
-.q-note-item__tag-add-btn:hover:not(:disabled) { background: #14532d; }
-.q-note-item__tag-add-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.q-note-item__tag-add-btn:hover:not(:disabled) {
+  background: #14532d;
+}
+.q-note-item__tag-add-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

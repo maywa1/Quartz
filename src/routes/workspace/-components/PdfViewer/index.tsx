@@ -342,8 +342,13 @@ export default function PdfViewer({ pdf, initialPage }: Props) {
             <span className="text-sm">
               {numPages > 0 ? `${numPages} pages` : 'No PDF loaded'}
             </span>
-            <Button onClick={() => setScale(scale + 0.25)} variant='ghost'>Zoom In</Button>
-            <Button onClick={() => setScale(Math.max(0.5, scale - 0.25))} variant='ghost'>
+            <Button onClick={() => setScale(scale + 0.25)} variant="ghost">
+              Zoom In
+            </Button>
+            <Button
+              onClick={() => setScale(Math.max(0.5, scale - 0.25))}
+              variant="ghost"
+            >
               Zoom Out
             </Button>
           </div>

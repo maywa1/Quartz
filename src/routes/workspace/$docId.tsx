@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useDatabase } from '#/providers'
 import { useWorkspace } from '#/context/WorkspaceContext'
 import type { Note, PDF } from '#/types/types'
@@ -29,15 +29,24 @@ interface NotFoundData {
 type WorkspaceData = NoteData | PdfData | NotFoundData
 
 export const Route = createFileRoute('/workspace/$docId')({
+  validateSearch: (search: Record<string, unknown>) => {
+    return {
+      initialPage: search.initialPage ? Number(search.initialPage) : undefined,
+      noteId: search.noteId as string | undefined,
+    }
+  },
   component: Workspace,
 })
 
 function Workspace() {
   const { docId } = Route.useParams()
+  const { initialPage: searchInitialPage, noteId: searchNoteId } =
+    Route.useSearch()
   const [workspaceData, setWorkspaceData] = useState<WorkspaceData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const { activeNoteId, setActiveNoteId } = useWorkspace()
-  const [initialPage, setInitialPage] = useState<number|undefined>()
+  const [initialPage, setInitialPage] = useState<number | undefined>()
+  const isInitialLoadRef = useRef(true)
 
   useEffect(() => {
     async function loadData() {
@@ -48,6 +57,17 @@ function Workspace() {
         setWorkspaceData({ type: 'not-found' } as NotFoundData)
         setIsLoading(false)
         return
+      }
+
+      if (searchNoteId) {
+        const note = await db.notes.findById(searchNoteId)
+        if (note && note.pdf_id === docId) {
+          setWorkspaceData({ type: 'pdf', data: { id: docId } } as PdfData)
+          setInitialPage(note.pdf_page)
+          setActiveNoteId(searchNoteId)
+          setIsLoading(false)
+          return
+        }
       }
 
       const note = await db.notes.findById(docId)
@@ -61,8 +81,12 @@ function Workspace() {
       const pdf = await db.pdfs.findById(docId)
       if (pdf) {
         setWorkspaceData({ type: 'pdf', data: pdf } as PdfData)
+        if (isInitialLoadRef.current && searchInitialPage) {
+          setInitialPage(searchInitialPage)
+        }
         setIsLoading(false)
         setActiveNoteId(null)
+        isInitialLoadRef.current = false
         return
       }
 
@@ -71,7 +95,7 @@ function Workspace() {
     }
 
     loadData()
-  }, [docId, setActiveNoteId])
+  }, [docId, searchNoteId, setActiveNoteId])
 
   if (isLoading || !workspaceData) {
     return (
@@ -97,7 +121,7 @@ function Workspace() {
         </ResizablePanel>
         <ResizableHandle withHandle />
         <ResizablePanel defaultSize={50} minSize={0}>
-          <PdfViewer pdf={workspaceData.data} initialPage={initialPage}/>
+          <PdfViewer pdf={workspaceData.data} initialPage={initialPage} />
         </ResizablePanel>
       </ResizablePanelGroup>
     )
