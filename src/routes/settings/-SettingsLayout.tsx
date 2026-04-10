@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { SettingsNav } from './-components/SettingsNav'
 import { Text } from '#/components/ui'
-import { SETTINGS_PANELS, DEFAULT_SETTINGS_PANEL_ID } from './settings.config'
+import { SETTINGS_PANELS, DEFAULT_SETTINGS_PANEL_ID } from './-settings.config'
 
 /**
  * SettingsLayout — the two-column shell used by the /settings route.
