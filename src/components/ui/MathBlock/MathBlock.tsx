@@ -1,15 +1,15 @@
-import type { ReactNode, CSSProperties } from "react";
-import type { MathBlockLabel } from "../types";
-import { cn } from "../cn";
-import "./MathBlock.css";
+import type { ReactNode, CSSProperties } from 'react'
+import type { MathBlockLabel } from '../types'
+import { cn } from '../cn'
+import './MathBlock.css'
 
 export interface MathBlockProps {
   /** Semantic label shown above the expression */
-  label?: MathBlockLabel;
+  label?: MathBlockLabel
   /** The mathematical expression — plain text, Unicode, or LaTeX string */
-  children: ReactNode;
-  className?: string;
-  style?: CSSProperties;
+  children: ReactNode
+  className?: string
+  style?: CSSProperties
 }
 
 /**
@@ -25,27 +25,36 @@ export interface MathBlockProps {
  *   lim(n→∞) (1 + 1/n)ⁿ = e ≈ 2.71828...
  * </MathBlock>
  */
-export function MathBlock({ label, children, className, style }: MathBlockProps) {
+export function MathBlock({
+  label,
+  children,
+  className,
+  style,
+}: MathBlockProps) {
   return (
     <figure
-      className={cn("q-math-block", className)}
+      className={cn('q-math-block', className)}
       style={style}
-      aria-label={label ? `${label}: ${typeof children === "string" ? children : ""}` : undefined}
+      aria-label={
+        label
+          ? `${label}: ${typeof children === 'string' ? children : ''}`
+          : undefined
+      }
     >
       {label && (
         <figcaption className="q-math-block__label">{label}</figcaption>
       )}
       <div className="q-math-block__expr">{children}</div>
     </figure>
-  );
+  )
 }
 
 /* ── Inline formula chip ──────────────────────────────────── */
 
 export interface FormulaProps {
-  children: ReactNode;
-  className?: string;
-  style?: CSSProperties;
+  children: ReactNode
+  className?: string
+  style?: CSSProperties
 }
 
 /**
@@ -59,8 +68,8 @@ export interface FormulaProps {
  */
 export function Formula({ children, className, style }: FormulaProps) {
   return (
-    <code className={cn("q-formula", className)} style={style}>
+    <code className={cn('q-formula', className)} style={style}>
       {children}
     </code>
-  );
+  )
 }

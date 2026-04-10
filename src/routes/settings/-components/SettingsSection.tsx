@@ -1,12 +1,12 @@
-import type { ReactNode } from "react";
-import { Divider } from "#/components/ui";
+import type { ReactNode } from 'react'
+import { Divider } from '#/components/ui'
 
 interface SettingsSectionProps {
-  title: string;
-  description?: string;
-  children: ReactNode;
+  title: string
+  description?: string
+  children: ReactNode
   /** Suppress the top divider — use on the first section */
-  first?: boolean;
+  first?: boolean
 }
 
 /**
@@ -27,11 +27,13 @@ export function SettingsSection({
   first = false,
 }: SettingsSectionProps) {
   return (
-    <section aria-labelledby={`section-${title.toLowerCase().replace(/\s+/g, "-")}`}>
+    <section
+      aria-labelledby={`section-${title.toLowerCase().replace(/\s+/g, '-')}`}
+    >
       {!first && <Divider />}
       <div className="mb-5">
         <h2
-          id={`section-${title.toLowerCase().replace(/\s+/g, "-")}`}
+          id={`section-${title.toLowerCase().replace(/\s+/g, '-')}`}
           className="text-sm font-medium tracking-widest uppercase text-(--q-green-deep) opacity-60"
         >
           {title}
@@ -44,5 +46,5 @@ export function SettingsSection({
       </div>
       <div className="flex flex-col gap-1">{children}</div>
     </section>
-  );
+  )
 }

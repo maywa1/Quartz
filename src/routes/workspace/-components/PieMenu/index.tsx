@@ -29,13 +29,13 @@ export default function PieMenu({
   movementThreshold = 5,
   radius = 110,
   children,
-  onVisibilityChange
+  onVisibilityChange,
 }: PieMenuProps) {
   const [menuState, setMenuState] = useState<MenuState>({
     visible: false,
     x: 0,
     y: 0,
-    selectedIndex: null
+    selectedIndex: null,
   })
 
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
@@ -81,7 +81,7 @@ export default function PieMenu({
             visible: true,
             x: e.clientX,
             y: e.clientY,
-            selectedIndex: null
+            selectedIndex: null,
           })
         }
       }, holdDuration)
@@ -114,7 +114,7 @@ export default function PieMenu({
           const buttonX = menuStateRef.current.x + pos.x
           const buttonY = menuStateRef.current.y + pos.y
           const buttonDist = Math.sqrt(
-            Math.pow(e.clientX - buttonX, 2) + Math.pow(e.clientY - buttonY, 2)
+            Math.pow(e.clientX - buttonX, 2) + Math.pow(e.clientY - buttonY, 2),
           )
 
           if (buttonDist <= HOVER_RADIUS) {
@@ -136,7 +136,8 @@ export default function PieMenu({
             const normalizedAngle = (angle + Math.PI * 2) % (Math.PI * 2)
             const segmentAngle = (Math.PI * 2) / items.length
             const index =
-              Math.floor((normalizedAngle + segmentAngle / 2) / segmentAngle) % items.length
+              Math.floor((normalizedAngle + segmentAngle / 2) / segmentAngle) %
+              items.length
 
             setMenuState((prev) => ({ ...prev, selectedIndex: index }))
           } else {
@@ -182,11 +183,11 @@ export default function PieMenu({
     }
   }, [items, holdDuration, movementThreshold, radius])
 
-  const getItemPosition = (index: number, total: number, radius: number) => {
+  const getItemPosition = (index: number, total: number, radiusVal: number) => {
     const angle = (Math.PI * 2 * index) / total - Math.PI / 2
     return {
-      x: Math.cos(angle) * radius,
-      y: Math.sin(angle) * radius
+      x: Math.cos(angle) * radiusVal,
+      y: Math.sin(angle) * radiusVal,
     }
   }
 
@@ -200,7 +201,7 @@ export default function PieMenu({
           style={{
             left: menuState.x,
             top: menuState.y,
-            transform: 'translate(-50%, -50%)'
+            transform: 'translate(-50%, -50%)',
           }}
         >
           {/* Center dot */}
@@ -220,7 +221,7 @@ export default function PieMenu({
                 style={{
                   left: '50%',
                   top: '50%',
-                  transform: `translate(calc(-50% + ${pos.x}px), calc(-50% + ${pos.y}px))`
+                  transform: `translate(calc(-50% + ${pos.x}px), calc(-50% + ${pos.y}px))`,
                 }}
               >
                 {/* Item button */}
@@ -256,11 +257,13 @@ export default function PieMenu({
                       top: pos.y > 0 ? '100%' : 'auto',
                       bottom: pos.y <= 0 ? '100%' : 'auto',
                       marginTop: pos.y > 0 ? '8px' : '0',
-                      marginBottom: pos.y <= 0 ? '8px' : '0'
+                      marginBottom: pos.y <= 0 ? '8px' : '0',
                     }}
                   >
                     <div className="bg-neutral-900 border border-neutral-700/50 px-3 py-1.5 rounded-lg shadow-xl backdrop-blur-sm animate-in fade-in zoom-in-95 duration-150">
-                      <span className="text-sm font-medium text-neutral-200">{item.label}</span>
+                      <span className="text-sm font-medium text-neutral-200">
+                        {item.label}
+                      </span>
                     </div>
                   </div>
                 )}
@@ -313,4 +316,3 @@ export default function PieMenu({
     </div>
   )
 }
-

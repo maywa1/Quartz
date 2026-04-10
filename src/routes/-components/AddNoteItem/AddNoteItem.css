@@ -8,9 +8,10 @@
   padding: 0.65rem 0.75rem;
   background: transparent;
   cursor: pointer;
-  transition: border-color var(--q-transition), background var(--q-transition);
+  transition:
+    border-color var(--q-transition),
+    background var(--q-transition);
   outline: none;
-
 
   border: 1.5px dashed transparent;
   border-radius: var(--q-radius-md);
@@ -84,8 +85,14 @@
 }
 
 @keyframes q-form-in {
-  from { opacity: 0; transform: translateY(-4px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Title row */
@@ -126,7 +133,9 @@
   border-radius: var(--q-radius-xs);
   color: var(--q-text-muted);
   cursor: pointer;
-  transition: background var(--q-transition), color var(--q-transition);
+  transition:
+    background var(--q-transition),
+    color var(--q-transition);
 }
 
 .q-add-form__close:hover {

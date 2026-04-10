@@ -23,7 +23,7 @@ export class Database {
     this.sqlite3 = SQLite.Factory(module)
     const vfs = new AccessHandlePoolVFS('/') // directory path in OPFS
     await vfs.isReady // must await before registering
-    // @ts-ignore
+    // @ts-ignore - wa-sqlite VFS types not available in this version
     this.sqlite3.vfs_register(vfs, true)
     this.db = await this.sqlite3.open_v2(
       this.dbName,

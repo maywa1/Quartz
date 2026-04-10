@@ -1,16 +1,16 @@
-import type { CSSProperties } from "react";
-import { cn } from "../cn";
-import "./Progress.css";
+import type { CSSProperties } from 'react'
+import { cn } from '../cn'
+import './Progress.css'
 
 export interface ProgressProps {
   /** 0–100 */
-  value: number;
+  value: number
   /** Accessible label for screen readers */
-  label?: string;
+  label?: string
   /** Show percentage text to the right of the label */
-  showValue?: boolean;
-  className?: string;
-  style?: CSSProperties;
+  showValue?: boolean
+  className?: string
+  style?: CSSProperties
 }
 
 /**
@@ -27,10 +27,10 @@ export function Progress({
   className,
   style,
 }: ProgressProps) {
-  const clamped = Math.min(100, Math.max(0, value));
+  const clamped = Math.min(100, Math.max(0, value))
 
   return (
-    <div className={cn("q-progress", className)} style={style}>
+    <div className={cn('q-progress', className)} style={style}>
       {(label || showValue) && (
         <div className="q-progress__header">
           {label && <span className="q-progress__label">{label}</span>}
@@ -49,11 +49,8 @@ export function Progress({
         aria-valuemax={100}
         aria-label={label}
       >
-        <div
-          className="q-progress__fill"
-          style={{ width: `${clamped}%` }}
-        />
+        <div className="q-progress__fill" style={{ width: `${clamped}%` }} />
       </div>
     </div>
-  );
+  )
 }

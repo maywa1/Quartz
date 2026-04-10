@@ -1,22 +1,22 @@
-import type { ReactNode, CSSProperties } from "react";
-import type { CalloutIntent } from "../types";
-import { cn } from "../cn";
-import "./Callout.css";
+import type { ReactNode, CSSProperties } from 'react'
+import type { CalloutIntent } from '../types'
+import { cn } from '../cn'
+import './Callout.css'
 
 export interface CalloutProps {
   /** Semantic intent — controls color scheme */
-  intent?: CalloutIntent;
+  intent?: CalloutIntent
   /** Icon rendered before the content. Defaults are provided per intent. */
-  icon?: ReactNode;
-  children: ReactNode;
-  className?: string;
-  style?: CSSProperties;
+  icon?: ReactNode
+  children: ReactNode
+  className?: string
+  style?: CSSProperties
 }
 
 const DEFAULT_ICONS: Record<CalloutIntent, string> = {
-  info: "◈",
-  warn: "△",
-};
+  info: '◈',
+  warn: '△',
+}
 
 /**
  * Callout — highlighted informational or warning block.
@@ -31,26 +31,26 @@ const DEFAULT_ICONS: Record<CalloutIntent, string> = {
  * </Callout>
  */
 export function Callout({
-  intent = "info",
+  intent = 'info',
   icon,
   children,
   className,
   style,
 }: CalloutProps) {
-  const renderedIcon = icon ?? DEFAULT_ICONS[intent];
+  const renderedIcon = icon ?? DEFAULT_ICONS[intent]
 
   return (
     <div
-      className={cn("q-callout", `q-callout--${intent}`, className)}
-      role={intent === "warn" ? "alert" : "note"}
+      className={cn('q-callout', `q-callout--${intent}`, className)}
+      role={intent === 'warn' ? 'alert' : 'note'}
       style={style}
     >
-      {renderedIcon !== null && (
+      {renderedIcon && (
         <span className="q-callout__icon" aria-hidden="true">
           {renderedIcon}
         </span>
       )}
       <div className="q-callout__body">{children}</div>
     </div>
-  );
+  )
 }

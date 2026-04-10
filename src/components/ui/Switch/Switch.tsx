@@ -1,12 +1,14 @@
-import { useId } from "react";
-import type { InputHTMLAttributes } from "react";
-import { cn } from "../cn";
-import "./Switch.css";
+import { useId } from 'react'
+import type { InputHTMLAttributes } from 'react'
+import { cn } from '../cn'
+import './Switch.css'
 
-export interface SwitchProps
-  extends Omit<InputHTMLAttributes<HTMLInputElement>, "type" | "size"> {
+export interface SwitchProps extends Omit<
+  InputHTMLAttributes<HTMLInputElement>,
+  'type' | 'size'
+> {
   /** Visible label rendered beside the toggle */
-  label?: string;
+  label?: string
 }
 
 /**
@@ -26,11 +28,11 @@ export function Switch({
   id: externalId,
   ...rest
 }: SwitchProps) {
-  const autoId = useId();
-  const id = externalId ?? autoId;
+  const autoId = useId()
+  const id = externalId ?? autoId
 
   return (
-    <div className={cn("q-switch-wrap", className)}>
+    <div className={cn('q-switch-wrap', className)}>
       <div className="q-switch__control-wrap">
         <input
           id={id}
@@ -49,5 +51,5 @@ export function Switch({
         </label>
       )}
     </div>
-  );
+  )
 }

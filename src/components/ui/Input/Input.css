@@ -22,7 +22,9 @@
   font-weight: 300;
   color: var(--q-text);
   outline: none;
-  transition: border-color var(--q-transition), box-shadow var(--q-transition);
+  transition:
+    border-color var(--q-transition),
+    box-shadow var(--q-transition);
   width: 100%;
 }
 

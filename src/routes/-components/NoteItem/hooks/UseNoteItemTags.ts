@@ -39,7 +39,9 @@ export function useNoteItemTags({ id, tags, isPdf }: UseNoteItemTagsOptions) {
           ? await removeTagFromNote.mutateAsync({ tagId: tag.id, noteId: id })
           : await addTagToNote.mutateAsync({ tagId: tag.id, noteId: id })
       }
-    } catch { /* errors handled by mutation */ }
+    } catch {
+      /* errors handled by mutation */
+    }
   }
 
   async function createAndAttach() {
@@ -49,8 +51,17 @@ export function useNoteItemTags({ id, tags, isPdf }: UseNoteItemTagsOptions) {
       if (isPdf) await addTagToPdf.mutateAsync({ tagId, pdfId: id })
       else await addTagToNote.mutateAsync({ tagId, noteId: id })
       setNewTagName('')
-    } catch { /* errors handled by mutation */ }
+    } catch {
+      /* errors handled by mutation */
+    }
   }
 
-  return { allTags, selectedTagIds, newTagName, setNewTagName, toggleTag, createAndAttach }
+  return {
+    allTags,
+    selectedTagIds,
+    newTagName,
+    setNewTagName,
+    toggleTag,
+    createAndAttach,
+  }
 }

@@ -6,7 +6,6 @@ import viteReact from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
-
 const config = defineConfig({
   plugins: [
     devtools(),

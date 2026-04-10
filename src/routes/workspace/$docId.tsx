@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState, useEffect, useRef } from 'react'
-import { useDatabase } from '#/providers'
+import type { useDatabase } from '#/providers'
 import { useWorkspace } from '#/context/WorkspaceContext'
 import type { Note, PDF } from '#/types/types'
 import { Canvas } from './-components/Canvas'

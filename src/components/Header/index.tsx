@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import { Settings  } from 'lucide-react'
+import { Settings } from 'lucide-react'
 import { Text } from '../ui'
 import { cn } from '../ui/cn'
 import './Header.css'

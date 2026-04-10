@@ -1,25 +1,25 @@
-import { useState, useId } from "react";
-import type { ReactNode, CSSProperties, KeyboardEvent } from "react";
-import { cn } from "../cn";
-import "./Tabs.css";
+import { useState, useId } from 'react'
+import type { ReactNode, CSSProperties, KeyboardEvent } from 'react'
+import { cn } from '../cn'
+import './Tabs.css'
 
 export interface TabItem {
-  label: string;
-  content: ReactNode;
+  label: string
+  content: ReactNode
   /** Disable this individual tab */
-  disabled?: boolean;
+  disabled?: boolean
 }
 
 export interface TabsProps {
-  tabs: TabItem[];
+  tabs: TabItem[]
   /** Controlled active index */
-  activeIndex?: number;
+  activeIndex?: number
   /** Callback when tab changes */
-  onChange?: (index: number) => void;
+  onChange?: (index: number) => void
   /** Default active tab for uncontrolled usage */
-  defaultIndex?: number;
-  className?: string;
-  style?: CSSProperties;
+  defaultIndex?: number
+  className?: string
+  style?: CSSProperties
 }
 
 /**
@@ -47,41 +47,41 @@ export function Tabs({
   className,
   style,
 }: TabsProps) {
-  const [internalIndex, setInternalIndex] = useState(defaultIndex);
-  const isControlled = controlledIndex !== undefined;
-  const active = isControlled ? controlledIndex : internalIndex;
-  const baseId = useId();
+  const [internalIndex, setInternalIndex] = useState(defaultIndex)
+  const isControlled = controlledIndex !== undefined
+  const active = isControlled ? controlledIndex : internalIndex
+  const baseId = useId()
 
   function select(index: number) {
-    if (tabs[index]?.disabled) return;
-    if (!isControlled) setInternalIndex(index);
-    onChange?.(index);
+    if (tabs[index]?.disabled) return
+    if (!isControlled) setInternalIndex(index)
+    onChange?.(index)
   }
 
   function handleKeyDown(e: KeyboardEvent<HTMLElement>, index: number) {
-    if (e.key === "ArrowRight") {
-      e.preventDefault();
-      const next = (index + 1) % tabs.length;
-      select(next);
-    } else if (e.key === "ArrowLeft") {
-      e.preventDefault();
-      const prev = (index - 1 + tabs.length) % tabs.length;
-      select(prev);
-    } else if (e.key === "Home") {
-      e.preventDefault();
-      select(0);
-    } else if (e.key === "End") {
-      e.preventDefault();
-      select(tabs.length - 1);
+    if (e.key === 'ArrowRight') {
+      e.preventDefault()
+      const next = (index + 1) % tabs.length
+      select(next)
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault()
+      const prev = (index - 1 + tabs.length) % tabs.length
+      select(prev)
+    } else if (e.key === 'Home') {
+      e.preventDefault()
+      select(0)
+    } else if (e.key === 'End') {
+      e.preventDefault()
+      select(tabs.length - 1)
     }
   }
 
   return (
-    <div className={cn("q-tabs-root", className)} style={style}>
+    <div className={cn('q-tabs-root', className)} style={style}>
       <div className="q-tabs" role="tablist">
         {tabs.map((tab, i) => {
-          const tabId = `${baseId}-tab-${i}`;
-          const panelId = `${baseId}-panel-${i}`;
+          const tabId = `${baseId}-tab-${i}`
+          const panelId = `${baseId}-panel-${i}`
           return (
             <button
               key={i}
@@ -91,19 +91,23 @@ export function Tabs({
               aria-controls={panelId}
               aria-disabled={tab.disabled}
               tabIndex={active === i ? 0 : -1}
-              className={cn("q-tab", active === i && "q-tab--active", tab.disabled && "q-tab--disabled")}
+              className={cn(
+                'q-tab',
+                active === i && 'q-tab--active',
+                tab.disabled && 'q-tab--disabled',
+              )}
               onClick={() => select(i)}
               onKeyDown={(e) => handleKeyDown(e, i)}
             >
               {tab.label}
             </button>
-          );
+          )
         })}
       </div>
 
       {tabs.map((tab, i) => {
-        const tabId = `${baseId}-tab-${i}`;
-        const panelId = `${baseId}-panel-${i}`;
+        const tabId = `${baseId}-tab-${i}`
+        const panelId = `${baseId}-panel-${i}`
         return (
           <div
             key={i}
@@ -115,8 +119,8 @@ export function Tabs({
           >
             {tab.content}
           </div>
-        );
+        )
       })}
     </div>
-  );
+  )
 }

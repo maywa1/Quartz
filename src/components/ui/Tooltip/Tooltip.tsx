@@ -1,18 +1,18 @@
-import { useState, useId } from "react";
-import type { ReactNode, CSSProperties } from "react";
-import { cn } from "../cn";
-import "./Tooltip.css";
+import { useState, useId } from 'react'
+import type { ReactNode, CSSProperties } from 'react'
+import { cn } from '../cn'
+import './Tooltip.css'
 
-export type TooltipPlacement = "top" | "bottom" | "left" | "right";
+export type TooltipPlacement = 'top' | 'bottom' | 'left' | 'right'
 
 export interface TooltipProps {
   /** The tooltip text */
-  content: string;
+  content: string
   /** The element that triggers the tooltip */
-  children: ReactNode;
-  placement?: TooltipPlacement;
-  className?: string;
-  style?: CSSProperties;
+  children: ReactNode
+  placement?: TooltipPlacement
+  className?: string
+  style?: CSSProperties
 }
 
 /**
@@ -26,16 +26,16 @@ export interface TooltipProps {
 export function Tooltip({
   content,
   children,
-  placement = "top",
+  placement = 'top',
   className,
   style,
 }: TooltipProps) {
-  const [visible, setVisible] = useState(false);
-  const id = useId();
+  const [visible, setVisible] = useState(false)
+  const id = useId()
 
   return (
     <div
-      className={cn("q-tooltip-wrap", className)}
+      className={cn('q-tooltip-wrap', className)}
       style={style}
       onMouseEnter={() => setVisible(true)}
       onMouseLeave={() => setVisible(false)}
@@ -48,13 +48,13 @@ export function Tooltip({
         role="tooltip"
         aria-hidden={!visible}
         className={cn(
-          "q-tooltip",
+          'q-tooltip',
           `q-tooltip--${placement}`,
-          visible && "q-tooltip--visible"
+          visible && 'q-tooltip--visible',
         )}
       >
         {content}
       </div>
     </div>
-  );
+  )
 }

@@ -11,7 +11,9 @@
   background: var(--q-green-pale);
   border: 1px solid var(--q-border);
   box-shadow: var(--q-shadow-sm);
-  transition: box-shadow var(--q-transition), transform var(--q-transition);
+  transition:
+    box-shadow var(--q-transition),
+    transform var(--q-transition);
 }
 
 .q-card--elevated:hover {

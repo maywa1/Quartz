@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from "react"
+import { useRef, useEffect, useState } from 'react'
 
 interface LongPressRingProps {
   x: number
@@ -31,7 +31,9 @@ export default function LongPressRing({ x, y, progress }: LongPressRingProps) {
     }
 
     rafRef.current = requestAnimationFrame(animate)
-    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current) }
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current)
+    }
   }, [progress])
 
   const size = 56
@@ -39,13 +41,23 @@ export default function LongPressRing({ x, y, progress }: LongPressRingProps) {
   const r = (size - strokeWidth) / 2
   const circumference = 2 * Math.PI * r
   const offset = circumference * (1 - smoothProgress)
-  const clampedX = Math.max(size / 2 + 8, Math.min(window.innerWidth - size / 2 - 8, x))
-  const clampedY = Math.max(size / 2 + 8, Math.min(window.innerHeight - size / 2 - 8, y))
+  const clampedX = Math.max(
+    size / 2 + 8,
+    Math.min(window.innerWidth - size / 2 - 8, x),
+  )
+  const clampedY = Math.max(
+    size / 2 + 8,
+    Math.min(window.innerHeight - size / 2 - 8, y),
+  )
 
   return (
     <div
       className="fixed pointer-events-none z-50"
-      style={{ left: clampedX, top: clampedY, transform: 'translate(-50%, -50%)' }}
+      style={{
+        left: clampedX,
+        top: clampedY,
+        transform: 'translate(-50%, -50%)',
+      }}
     >
       <svg
         width={size}
@@ -53,21 +65,38 @@ export default function LongPressRing({ x, y, progress }: LongPressRingProps) {
         style={{ transform: 'rotate(-90deg)', overflow: 'visible' }}
       >
         <circle
-          cx={size / 2} cy={size / 2} r={r + 5}
-          fill="none" stroke="var(--q-green-mid)" strokeWidth={1}
+          cx={size / 2}
+          cy={size / 2}
+          r={r + 5}
+          fill="none"
+          stroke="var(--q-green-mid)"
+          strokeWidth={1}
           opacity={0.2 * smoothProgress}
         />
         <circle
-          cx={size / 2} cy={size / 2} r={r}
-          fill="none" stroke="var(--q-border)" strokeWidth={strokeWidth} opacity={0.35}
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          fill="none"
+          stroke="var(--q-border)"
+          strokeWidth={strokeWidth}
+          opacity={0.35}
         />
         <circle
-          cx={size / 2} cy={size / 2} r={r}
-          fill="none" stroke="var(--q-green-deep)" strokeWidth={strokeWidth}
-          strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round"
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          fill="none"
+          stroke="var(--q-green-deep)"
+          strokeWidth={strokeWidth}
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+          strokeLinecap="round"
         />
         <circle
-          cx={size / 2} cy={size / 2} r={3.5}
+          cx={size / 2}
+          cy={size / 2}
+          r={3.5}
           fill="var(--q-green-deep)"
           opacity={0.4 + 0.6 * smoothProgress}
           style={{ transform: 'rotate(90deg)', transformOrigin: '50% 50%' }}

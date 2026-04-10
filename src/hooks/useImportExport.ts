@@ -96,7 +96,7 @@ async function exportTldrawIDB(noteId: string): Promise<TldrawDump | null> {
         const store = tx.objectStore(storeName)
         const data = await new Promise<unknown[]>((res) => {
           const r = store.getAll()
-          r.onsuccess = () => res(r.result ?? [])
+          r.onsuccess = () => res(r.result)
           r.onerror = () => res([])
         })
         stores[storeName] = data
@@ -168,8 +168,8 @@ const crcTable = (() => {
 
 function crc32(data: Uint8Array): number {
   let crc = 0xffffffff
-  for (let i = 0; i < data.length; i++) {
-    crc = (crc >>> 8) ^ crcTable[(crc ^ data[i]) & 0xff]
+  for (const byte of data) {
+    crc = (crc >>> 8) ^ crcTable[(crc ^ byte) & 0xff]
   }
   return (crc ^ 0xffffffff) >>> 0
 }
@@ -358,14 +358,14 @@ export function useImportExport() {
 
       // Build the database dump from hook data
       const tagNotes: { tag_id: string; note_id: string }[] = []
-      for (const [noteId, tags] of allNoteTags) {
-        for (const tag of tags) {
+      for (const [noteId, noteItemTags] of allNoteTags) {
+        for (const tag of noteItemTags) {
           tagNotes.push({ tag_id: tag.id, note_id: noteId })
         }
       }
       const tagPdfs: { tag_id: string; pdf_id: string }[] = []
-      for (const [pdfId, tags] of allPdfTags) {
-        for (const tag of tags) {
+      for (const [pdfId, pdfItemTags] of allPdfTags) {
+        for (const tag of pdfItemTags) {
           tagPdfs.push({ tag_id: tag.id, pdf_id: pdfId })
         }
       }
@@ -428,7 +428,7 @@ export function useImportExport() {
       for (let i = 0; i < notes.length; i++) {
         const note = notes[i]
         const dump = await exportTldrawIDB(note.id)
-        if (dump && dump.stores.records?.length) {
+        if (dump && Object.keys(dump.stores).length > 0) {
           zip.addFileStr(
             `tldraw/${note.id}.json`,
             enc.encode(JSON.stringify(dump)),

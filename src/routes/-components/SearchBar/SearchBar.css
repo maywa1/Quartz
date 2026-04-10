@@ -52,7 +52,9 @@
   border-radius: 50%;
   cursor: pointer;
   color: var(--q-green-deep);
-  transition: background var(--q-transition), transform var(--q-transition);
+  transition:
+    background var(--q-transition),
+    transform var(--q-transition);
 }
 
 .q-search__clear:hover {

@@ -8,7 +8,7 @@ import { SCHEMA_VERSION } from '#/utils/config'
 import type { Statistics } from '#/types/types'
 
 export class DatabaseController {
-  private static instance: DatabaseController
+  private static instance: DatabaseController | undefined
 
   readonly pdfs: PdfRepository
   readonly notes: NoteRepository
@@ -25,7 +25,7 @@ export class DatabaseController {
   }
 
   static async initialize(dbName = 'app.db'): Promise<DatabaseController> {
-    if (DatabaseController.instance) {
+    if (DatabaseController.instance !== undefined) {
       return DatabaseController.instance
     }
 
@@ -39,7 +39,7 @@ export class DatabaseController {
   }
 
   static getInstance(): DatabaseController {
-    if (!DatabaseController.instance) {
+    if (DatabaseController.instance === undefined) {
       throw new Error(
         'DatabaseController not initialized. Call initialize() first.',
       )

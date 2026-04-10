@@ -16,7 +16,7 @@ export interface SearchBarHandle {
 }
 
 export const SearchBar = forwardRef<SearchBarHandle, SearchBarProps>(
-  function SearchBar(
+  function SearchBarInner(
     {
       value: controlledValue,
       onChange,

@@ -1,18 +1,20 @@
-import { useId, forwardRef } from "react";
-import type { InputHTMLAttributes } from "react";
-import { cn } from "../cn";
-import "./Input.css";
+import { useId, forwardRef } from 'react'
+import type { InputHTMLAttributes } from 'react'
+import { cn } from '../cn'
+import './Input.css'
 
-export interface InputProps
-  extends Omit<InputHTMLAttributes<HTMLInputElement>, "size"> {
+export interface InputProps extends Omit<
+  InputHTMLAttributes<HTMLInputElement>,
+  'size'
+> {
   /** Visible label rendered above the input */
-  label?: string;
+  label?: string
   /** Helper text rendered below the input */
-  hint?: string;
+  hint?: string
   /** Error message — when provided the input takes the error visual state */
-  error?: string;
+  error?: string
   /** Render text in monospace (useful for LaTeX / formula inputs) */
-  mono?: boolean;
+  mono?: boolean
 }
 
 /**
@@ -33,17 +35,17 @@ export interface InputProps
  * <Input label="Expression" error="Unbalanced parentheses" value="f(x = " />
  */
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  function Input(
+  function InputInner(
     { label, hint, error, mono, className, id: externalId, ...rest },
-    ref
+    ref,
   ) {
-    const autoId = useId();
-    const id = externalId ?? autoId;
-    const hintId = `${id}-hint`;
-    const errorId = `${id}-error`;
+    const autoId = useId()
+    const id = externalId ?? autoId
+    const hintId = `${id}-hint`
+    const errorId = `${id}-error`
 
     return (
-      <div className={cn("q-input-wrap", className)}>
+      <div className={cn('q-input-wrap', className)}>
         {label && (
           <label htmlFor={id} className="q-input__label">
             {label}
@@ -53,18 +55,20 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           ref={ref}
           id={id}
           className={cn(
-            "q-input",
-            mono && "q-input--mono",
-            error && "q-input--error"
+            'q-input',
+            mono && 'q-input--mono',
+            error && 'q-input--error',
           )}
-          aria-describedby={
-            error ? errorId : hint ? hintId : undefined
-          }
+          aria-describedby={error ? errorId : hint ? hintId : undefined}
           aria-invalid={error ? true : undefined}
           {...rest}
         />
         {error ? (
-          <span id={errorId} className="q-input__hint q-input__hint--error" role="alert">
+          <span
+            id={errorId}
+            className="q-input__hint q-input__hint--error"
+            role="alert"
+          >
             {error}
           </span>
         ) : hint ? (
@@ -73,6 +77,6 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           </span>
         ) : null}
       </div>
-    );
-  }
-);
+    )
+  },
+)

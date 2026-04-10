@@ -116,8 +116,8 @@ INNER JOIN tags t ON t.id = tn.tag_id`,
         name: row.name,
         created_at: row.created_at,
       }
-      if (!result[row.note_id]) result[row.note_id] = []
-      result[row.note_id].push(tag)
+      const key = row.note_id
+      ;(result[key] ??= []).push(tag)
     }
     return result
   }
@@ -140,8 +140,8 @@ INNER JOIN tags t ON t.id = tp.tag_id`,
         name: row.name,
         created_at: row.created_at,
       }
-      if (!result[row.pdf_id]) result[row.pdf_id] = []
-      result[row.pdf_id].push(tag)
+      const key = row.pdf_id
+      ;(result[key] ??= []).push(tag)
     }
     return result
   }

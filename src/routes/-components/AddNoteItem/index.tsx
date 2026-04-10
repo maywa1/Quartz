@@ -5,9 +5,8 @@ import {
   useMemo,
   useImperativeHandle,
   forwardRef,
-  type KeyboardEvent,
-  type ChangeEvent,
 } from 'react'
+import type { KeyboardEvent, ChangeEvent } from 'react'
 import { Tag as TagIcon, Plus, FileText, X } from 'lucide-react'
 import { Button } from '#/components/ui'
 import { cn } from '#/components/ui/cn'
@@ -32,7 +31,7 @@ interface AddNoteItemProps {
 }
 
 export const AddNoteItem = forwardRef<AddNoteItemHandle, AddNoteItemProps>(
-  function AddNoteItem({ className }, ref) {
+  function AddNoteItemInner({ className }, ref) {
     const [expanded, setExpanded] = useState(false)
     const [title, setTitle] = useState('')
     const [tagInput, setTagInput] = useState('')

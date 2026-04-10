@@ -1,12 +1,12 @@
-import type { HTMLAttributes } from "react";
-import { cn } from "../cn";
-import "./Card.css";
+import type { HTMLAttributes } from 'react'
+import { cn } from '../cn'
+import './Card.css'
 
 export interface CardProps extends HTMLAttributes<HTMLDivElement> {
   /** `elevated` has a subtle shadow + hover lift; `flat` uses a tinted surface with no shadow */
-  variant?: "elevated" | "flat";
+  variant?: 'elevated' | 'flat'
   /** Remove the default padding */
-  noPadding?: boolean;
+  noPadding?: boolean
 }
 
 /**
@@ -21,7 +21,7 @@ export interface CardProps extends HTMLAttributes<HTMLDivElement> {
  * <Card variant="flat">...</Card>
  */
 export function Card({
-  variant = "elevated",
+  variant = 'elevated',
   noPadding = false,
   className,
   children,
@@ -30,14 +30,14 @@ export function Card({
   return (
     <div
       className={cn(
-        "q-card",
+        'q-card',
         `q-card--${variant}`,
-        noPadding && "q-card--no-padding",
-        className
+        noPadding && 'q-card--no-padding',
+        className,
       )}
       {...rest}
     >
       {children}
     </div>
-  );
+  )
 }

@@ -37,7 +37,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background var(--q-transition), border-color var(--q-transition);
+  transition:
+    background var(--q-transition),
+    border-color var(--q-transition);
   pointer-events: none;
 }
 
@@ -75,7 +77,9 @@
   color: var(--q-text);
   cursor: pointer;
   line-height: 1.4;
-  transition: color var(--q-transition), text-decoration var(--q-transition);
+  transition:
+    color var(--q-transition),
+    text-decoration var(--q-transition);
 }
 
 .q-checkbox__input:disabled + .q-checkbox__label,
@@ -88,8 +92,11 @@
   Strike-through on checked — uses :has() for pure CSS coupling.
   The JS component also passes a modifier class for browsers without :has() support.
 */
-.q-checkbox__label--strike-on-check:has(~ .q-checkbox__control-wrap .q-checkbox__input:checked),
-.q-checkbox-wrap:has(.q-checkbox__input:checked) .q-checkbox__label--strike-on-check {
+.q-checkbox__label--strike-on-check:has(
+  ~ .q-checkbox__control-wrap .q-checkbox__input:checked
+),
+.q-checkbox-wrap:has(.q-checkbox__input:checked)
+  .q-checkbox__label--strike-on-check {
   color: var(--q-text-muted);
   text-decoration: line-through;
 }

@@ -1,12 +1,12 @@
-import type { ReactNode } from "react";
+import type { ReactNode } from 'react'
 
 interface SettingsRowProps {
-  label: string;
-  description?: string;
+  label: string
+  description?: string
   /** The control rendered on the right — Switch, Select, Button, etc. */
-  children: ReactNode;
+  children: ReactNode
   /** Render the control below the label instead of to the right */
-  stacked?: boolean;
+  stacked?: boolean
 }
 
 /**
@@ -35,7 +35,7 @@ export function SettingsRow({
       className={`
         flex rounded-xl px-4 py-3.5 transition-colors duration-150
         hover:bg-(--q-green-pale)
-        ${stacked ? "flex-col gap-3" : "flex-row items-center justify-between gap-6"}
+        ${stacked ? 'flex-col gap-3' : 'flex-row items-center justify-between gap-6'}
       `}
     >
       <div className="flex flex-col gap-0.5 min-w-0">
@@ -48,9 +48,7 @@ export function SettingsRow({
           </span>
         )}
       </div>
-      <div className={stacked ? "w-full" : "shrink-0"}>
-        {children}
-      </div>
+      <div className={stacked ? 'w-full' : 'shrink-0'}>{children}</div>
     </div>
-  );
+  )
 }

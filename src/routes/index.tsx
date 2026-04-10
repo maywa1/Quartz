@@ -1,8 +1,10 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { NoteItem } from './-components/NoteItem'
-import { AddNoteItem, type AddNoteItemHandle } from './-components/AddNoteItem'
-import { SearchBar, type SearchBarHandle } from './-components/SearchBar'
+import { AddNoteItem } from './-components/AddNoteItem'
+import type { AddNoteItemHandle } from './-components/AddNoteItem'
+import { SearchBar } from './-components/SearchBar'
+import type { SearchBarHandle } from './-components/SearchBar'
 import { Tabs, Text } from '#/components/ui'
 import Header from '#/components/Header'
 import { useNotes, usePdfs, useAllNoteTags, useAllPdfTags } from '#/hooks'
@@ -179,7 +181,7 @@ function Explorer() {
             content: makeTabContent(tab.id),
           }))}
           activeIndex={activeIndex}
-          onChange={(i) => setActiveTab(TAB_DEFS[i]!.id)}
+          onChange={(i) => setActiveTab(TAB_DEFS[i].id)}
         />
       </div>
     </>

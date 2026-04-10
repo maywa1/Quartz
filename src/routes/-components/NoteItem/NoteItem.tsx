@@ -1,4 +1,5 @@
-import { useMemo, type KeyboardEvent, type MouseEvent } from 'react'
+import { useMemo, useState } from 'react'
+import type { KeyboardEvent, MouseEvent } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import {
   MoreHorizontal,
@@ -24,7 +25,6 @@ import { PdfNoteItem } from './PdfNoteItem'
 import { useNoteItemMenu } from './hooks/UseNoteItemMenu'
 import { useNoteItemEdit } from './hooks/useNoteItemEdit'
 import { useNoteItemTags } from './hooks/UseNoteItemTags'
-import { useState } from 'react'
 import './NoteItem.css'
 
 export interface NoteItemProps {

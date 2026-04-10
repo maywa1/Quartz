@@ -26,7 +26,7 @@ export function DatabaseProvider({ dbName, children }: DatabaseProviderProps) {
     }
   }, [dbName])
 
-  if (!ready || !workerClient) return <Spinner/>
+  if (!ready || !workerClient) return <Spinner />
 
   return (
     <DatabaseContext.Provider value={{ db: workerClient, ready }}>

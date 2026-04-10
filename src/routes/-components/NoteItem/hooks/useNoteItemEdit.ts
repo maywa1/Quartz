@@ -40,11 +40,16 @@ export function useNoteItemEdit({ id, name, isPdf }: UseNoteItemEditOptions) {
 
   async function commit() {
     const trimmed = editName.trim()
-    if (!trimmed || trimmed === name) { cancel(); return }
+    if (!trimmed || trimmed === name) {
+      cancel()
+      return
+    }
     try {
       if (isPdf) await updatePdf.mutateAsync({ id, updates: { name: trimmed } })
       else await updateNote.mutateAsync({ id, updates: { name: trimmed } })
-    } catch { /* errors handled by mutation */ }
+    } catch {
+      /* errors handled by mutation */
+    }
     setEditing(false)
   }
 

@@ -32,7 +32,9 @@ export default function PdfViewer({ pdf, initialPage }: Props) {
   const [pdfDoc, setPdfDoc] = useState<pdfjsLib.PDFDocumentProxy | null>(null)
   const [numPages, setNumPages] = useState(0)
   const [scale, setScale] = useState(1.5)
-  const [noteCoordinates, setNoteCoordinates] = useState<Coordinates | undefined>()
+  const [noteCoordinates, setNoteCoordinates] = useState<
+    Coordinates | undefined
+  >()
   const { setActiveNoteId, setActivePdfId } = useWorkspace()
 
   const notesQuery = useNotesByPdf(pdf.id)
@@ -63,7 +65,8 @@ export default function PdfViewer({ pdf, initialPage }: Props) {
     const style = getComputedStyle(document.documentElement)
     return {
       noteGold: style.getPropertyValue('--q-green-deep').trim() || '#166534',
-      noteGoldStroke: style.getPropertyValue('--q-green-mid').trim() || '#22c55e',
+      noteGoldStroke:
+        style.getPropertyValue('--q-green-mid').trim() || '#22c55e',
       noteMuted: style.getPropertyValue('--q-text-muted').trim() || '#4b5563',
       noteMutedStroke: style.getPropertyValue('--q-border').trim() || '#d1fae5',
     }
@@ -179,7 +182,13 @@ export default function PdfViewer({ pdf, initialPage }: Props) {
   }, [cancelHold])
 
   const startHold = useCallback(
-    (clientX: number, clientY: number, pageNum: number, pdfX: number, pdfY: number) => {
+    (
+      clientX: number,
+      clientY: number,
+      pageNum: number,
+      pdfX: number,
+      pdfY: number,
+    ) => {
       cancelHold()
       isHoldingRef.current = true
       holdStartRef.current = Date.now()
@@ -227,18 +236,16 @@ export default function PdfViewer({ pdf, initialPage }: Props) {
 
       // Tap an existing note marker
       const pageNotes = notesPerPageRef.current[pageNum]
-      if (pageNotes) {
-        for (const note of pageNotes) {
-          if (!note.pdf_coordinate_x || !note.pdf_coordinate_y) continue
-          const noteCanvasX = note.pdf_coordinate_x * scale
-          const noteCanvasY = viewport.height - note.pdf_coordinate_y * scale
-          const distance = Math.sqrt(
-            Math.pow(x - noteCanvasX, 2) + Math.pow(y - noteCanvasY, 2),
-          )
-          if (distance <= 12) {
-            setActiveNoteId(note.id)
-            return
-          }
+      for (const note of pageNotes) {
+        if (!note.pdf_coordinate_x || !note.pdf_coordinate_y) continue
+        const noteCanvasX = note.pdf_coordinate_x * scale
+        const noteCanvasY = viewport.height - note.pdf_coordinate_y * scale
+        const distance = Math.sqrt(
+          Math.pow(x - noteCanvasX, 2) + Math.pow(y - noteCanvasY, 2),
+        )
+        if (distance <= 12) {
+          setActiveNoteId(note.id)
+          return
         }
       }
 
@@ -248,10 +255,15 @@ export default function PdfViewer({ pdf, initialPage }: Props) {
   )
 
   const drawNotesOnPage = useCallback(
-    (context: CanvasRenderingContext2D, viewport: pdfjsLib.PageViewport, pageNum: number) => {
+    (
+      context: CanvasRenderingContext2D,
+      viewport: pdfjsLib.PageViewport,
+      pageNum: number,
+    ) => {
       const pageNotes: Note[] = []
       notes.forEach((note) => {
-        if (!note.pdf_coordinate_x || !note.pdf_coordinate_y || !note.pdf_page) return
+        if (!note.pdf_coordinate_x || !note.pdf_coordinate_y || !note.pdf_page)
+          return
         if (note.pdf_page !== pageNum) return
         pageNotes.push(note)
 
@@ -295,7 +307,9 @@ export default function PdfViewer({ pdf, initialPage }: Props) {
       canvas.className = 'cursor-crosshair border border-gray-300 select-none'
       canvas.dataset.pageNumber = pageNum.toString()
 
-      canvas.addEventListener('mousedown', (e) => handleCanvasMouseDown(e, pageNum))
+      canvas.addEventListener('mousedown', (e) =>
+        handleCanvasMouseDown(e, pageNum),
+      )
 
       placeholder.style.width = `${viewport.width}px`
       placeholder.style.height = `${viewport.height}px`
@@ -341,7 +355,9 @@ export default function PdfViewer({ pdf, initialPage }: Props) {
       }
     }
     loadPdf()
-    return () => { isMounted = false }
+    return () => {
+      isMounted = false
+    }
   }, [pdf.id])
 
   // Build placeholders + IntersectionObserver
@@ -409,7 +425,7 @@ export default function PdfViewer({ pdf, initialPage }: Props) {
     for (const pageNum of renderedPagesRef.current) {
       const placeholder = containerRef.current.querySelector(
         `[data-page-number="${pageNum}"]`,
-      ) as HTMLDivElement | null
+      )
       if (!placeholder) continue
       renderedPagesRef.current.delete(pageNum)
       renderedPagesRef.current.add(pageNum)
@@ -427,7 +443,10 @@ export default function PdfViewer({ pdf, initialPage }: Props) {
           <Button onClick={() => setScale(scale + 0.25)} variant="ghost">
             Zoom In
           </Button>
-          <Button onClick={() => setScale(Math.max(0.5, scale - 0.25))} variant="ghost">
+          <Button
+            onClick={() => setScale(Math.max(0.5, scale - 0.25))}
+            variant="ghost"
+          >
             Zoom Out
           </Button>
         </div>
@@ -442,7 +461,11 @@ export default function PdfViewer({ pdf, initialPage }: Props) {
       </div>
 
       {ringState.visible && (
-        <LongPressRing x={ringState.x} y={ringState.y} progress={ringState.progress} />
+        <LongPressRing
+          x={ringState.x}
+          y={ringState.y}
+          progress={ringState.progress}
+        />
       )}
 
       <PromptDialog

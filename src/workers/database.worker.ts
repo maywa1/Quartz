@@ -27,11 +27,11 @@ self.onmessage = async (event: MessageEvent<WorkerMessage>) => {
   const { type } = event.data
 
   if (type === 'init') {
-    const payload = event.data.payload as InitPayload
+    const payload = event.data.payload
     if (dbController) return
     try {
       dbController = await DatabaseController.initialize(
-        payload?.dbName || 'app.db',
+        payload.dbName || 'app.db',
       )
       self.postMessage({ type: 'ready' })
     } catch (err) {
@@ -40,7 +40,7 @@ self.onmessage = async (event: MessageEvent<WorkerMessage>) => {
   }
 
   if (type === 'query' && dbController) {
-    const payload = event.data.payload as QueryPayload
+    const payload = event.data.payload
     const { repository, method, args, id } = payload
     console.log('Worker received query:', repository, method, args)
     try {
@@ -86,7 +86,7 @@ self.onmessage = async (event: MessageEvent<WorkerMessage>) => {
       })
       return
     }
-    const payload = event.data.payload as ImportPayload
+    const payload = event.data.payload
     try {
       await dbController.importExport.importAll(payload.data)
       self.postMessage({ type: 'importResult' })

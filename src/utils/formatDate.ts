@@ -8,4 +8,3 @@ export function formatDate(dateString?: string): string {
   if (diffDays < 7) return `${diffDays}d ago`
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
-

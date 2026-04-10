@@ -1,10 +1,5 @@
-import {
-  useState,
-  useRef,
-  useEffect,
-  type MouseEvent,
-  type KeyboardEvent,
-} from 'react'
+import { useState, useRef, useEffect } from 'react'
+import type { MouseEvent, KeyboardEvent } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { Badge } from '#/components/ui'
 import { Bookmark, MoreHorizontal } from 'lucide-react'

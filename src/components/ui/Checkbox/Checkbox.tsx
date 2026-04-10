@@ -1,14 +1,16 @@
-import { useId } from "react";
-import type { InputHTMLAttributes } from "react";
-import { cn } from "../cn";
-import "./Checkbox.css";
+import { useId } from 'react'
+import type { InputHTMLAttributes } from 'react'
+import { cn } from '../cn'
+import './Checkbox.css'
 
-export interface CheckboxProps
-  extends Omit<InputHTMLAttributes<HTMLInputElement>, "type" | "size"> {
+export interface CheckboxProps extends Omit<
+  InputHTMLAttributes<HTMLInputElement>,
+  'type' | 'size'
+> {
   /** Visible label rendered next to the checkbox */
-  label?: string;
+  label?: string
   /** Apply strikethrough to label when checked */
-  strikeOnCheck?: boolean;
+  strikeOnCheck?: boolean
 }
 
 /**
@@ -32,11 +34,11 @@ export function Checkbox({
   checked,
   ...rest
 }: CheckboxProps) {
-  const autoId = useId();
-  const id = externalId ?? autoId;
+  const autoId = useId()
+  const id = externalId ?? autoId
 
   return (
-    <div className={cn("q-checkbox-wrap", className)}>
+    <div className={cn('q-checkbox-wrap', className)}>
       <div className="q-checkbox__control-wrap">
         <input
           id={id}
@@ -68,13 +70,13 @@ export function Checkbox({
         <label
           htmlFor={id}
           className={cn(
-            "q-checkbox__label",
-            strikeOnCheck && "q-checkbox__label--strike-on-check"
+            'q-checkbox__label',
+            strikeOnCheck && 'q-checkbox__label--strike-on-check',
           )}
         >
           {label}
         </label>
       )}
     </div>
-  );
+  )
 }
