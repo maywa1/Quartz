@@ -186,7 +186,7 @@ function Explorer() {
   )
 }
 
-// ── Sub-components ────────────────────────────────────────────
+// Sub-components
 
 function ExplorerSkeleton() {
   return (
@@ -194,7 +194,7 @@ function ExplorerSkeleton() {
       {Array.from({ length: 5 }).map((_, i) => (
         <div
           key={i}
-          className="h-12 rounded-xl bg-[--q-green-pale]"
+          className="h-12 rounded-xl bg-(--q-green-pale)"
           style={{ opacity: 1 - i * 0.15 }}
         />
       ))}
@@ -222,7 +222,7 @@ function ExplorerEmpty({ hasSearch, tabId }: ExplorerEmptyProps) {
 
   return (
     <div className="flex flex-col items-center justify-center py-16 gap-2 text-center">
-      <Text variant="caption" className="text-[--q-text-muted]">
+      <Text variant="caption" className="text-(--q-text-muted)">
         {message}
       </Text>
       <Text variant="caption" style={{ opacity: 0.55, fontSize: '0.75rem' }}>

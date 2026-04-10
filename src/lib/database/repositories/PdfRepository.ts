@@ -72,7 +72,13 @@ export class PdfRepository extends BaseRepository {
   }
 
   async delete(id: string): Promise<void> {
+    await this.db.run('DELETE FROM tag_pdfs WHERE pdf_id = ?', [id])
     await this.db.run('DELETE FROM pdfs WHERE id = ?', [id])
+  }
+
+  async deleteAll(): Promise<void> {
+    await this.db.run('DELETE FROM tag_pdfs')
+    await this.db.run('DELETE FROM pdfs')
   }
 
   async findRecentlyOpened(limit = 5): Promise<PDF[]> {

@@ -3,6 +3,7 @@ import { PdfRepository } from './repositories/PdfRepository'
 import { NoteRepository } from './repositories/NoteRepository'
 import { TagRepository } from './repositories/TagRepository'
 import { SettingsRepository } from './repositories/SettingsRepository'
+import { ImportExportRepository } from './repositories/ImportExportRepository'
 import { SCHEMA_VERSION } from '#/utils/config'
 import type { Statistics } from '#/types/types'
 
@@ -13,12 +14,14 @@ export class DatabaseController {
   readonly notes: NoteRepository
   readonly tags: TagRepository
   readonly settings: SettingsRepository
+  readonly importExport: ImportExportRepository
 
   private constructor(private readonly db: Database) {
     this.pdfs = new PdfRepository(db)
     this.notes = new NoteRepository(db)
     this.tags = new TagRepository(db)
     this.settings = new SettingsRepository(db)
+    this.importExport = new ImportExportRepository(db)
   }
 
   static async initialize(dbName = 'app.db'): Promise<DatabaseController> {
@@ -42,6 +45,10 @@ export class DatabaseController {
       )
     }
     return DatabaseController.instance
+  }
+
+  getDb(): Database {
+    return this.db
   }
 
   async getStatistics(): Promise<Statistics> {

@@ -25,7 +25,15 @@ export class TagRepository extends BaseRepository {
   }
 
   async delete(id: string): Promise<void> {
+    await this.db.run('DELETE FROM tag_notes WHERE tag_id = ?', [id])
+    await this.db.run('DELETE FROM tag_pdfs WHERE tag_id = ?', [id])
     await this.db.run('DELETE FROM tags WHERE id = ?', [id])
+  }
+
+  async deleteAll(): Promise<void> {
+    await this.db.run('DELETE FROM tag_notes')
+    await this.db.run('DELETE FROM tag_pdfs')
+    await this.db.run('DELETE FROM tags')
   }
 
   async addTagToNote(tagId: string, noteId: string): Promise<void> {
@@ -103,7 +111,11 @@ INNER JOIN tags t ON t.id = tn.tag_id`,
     )
     const result: Record<string, Tag[]> = {}
     for (const row of rows) {
-      const tag: Tag = { id: row.tag_id, name: row.name, created_at: row.created_at }
+      const tag: Tag = {
+        id: row.tag_id,
+        name: row.name,
+        created_at: row.created_at,
+      }
       if (!result[row.note_id]) result[row.note_id] = []
       result[row.note_id].push(tag)
     }
@@ -123,7 +135,11 @@ INNER JOIN tags t ON t.id = tp.tag_id`,
     )
     const result: Record<string, Tag[]> = {}
     for (const row of rows) {
-      const tag: Tag = { id: row.tag_id, name: row.name, created_at: row.created_at }
+      const tag: Tag = {
+        id: row.tag_id,
+        name: row.name,
+        created_at: row.created_at,
+      }
       if (!result[row.pdf_id]) result[row.pdf_id] = []
       result[row.pdf_id].push(tag)
     }

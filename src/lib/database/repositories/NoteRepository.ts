@@ -92,7 +92,13 @@ export class NoteRepository extends BaseRepository {
   }
 
   async delete(id: string): Promise<void> {
+    await this.db.run('DELETE FROM tag_notes WHERE note_id = ?', [id])
     await this.db.run('DELETE FROM notes WHERE id = ?', [id])
+  }
+
+  async deleteAll(): Promise<void> {
+    await this.db.run('DELETE FROM tag_notes')
+    await this.db.run('DELETE FROM notes')
   }
 
   async countByPdf(pdfId: string): Promise<number> {

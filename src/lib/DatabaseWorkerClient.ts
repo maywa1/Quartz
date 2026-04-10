@@ -1,8 +1,9 @@
 import type { Note, PDF, Tag, Statistics } from '../types/types'
+import type { ImportExportRepository } from './database/repositories/ImportExportRepository'
 
 type PendingQuery = {
-  resolve: (val: any) => void
-  reject: (err: any) => void
+  resolve: (val: unknown) => void
+  reject: (err: Error) => void
 }
 
 interface DatabaseClientInterface {
@@ -80,7 +81,7 @@ export class DatabaseWorkerClient implements DatabaseClientInterface {
   private queryId = 0
   private pendingQueries = new Map<number, PendingQuery>()
   private readyResolver?: () => void
-  private readyRejecter?: (err: any) => void
+  private readyRejecter?: (err: Error) => void
 
   constructor() {
     this.worker = new Worker(
@@ -104,6 +105,26 @@ export class DatabaseWorkerClient implements DatabaseClientInterface {
         const pending = this.pendingQueries.get(id)
         pending?.reject(new Error(error))
         this.pendingQueries.delete(id)
+      }
+      if (type === 'exportResult') {
+        const pending = this.pendingQueries.get(-1)
+        pending?.resolve(result)
+        this.pendingQueries.delete(-1)
+      }
+      if (type === 'exportError') {
+        const pending = this.pendingQueries.get(-1)
+        pending?.reject(new Error(error))
+        this.pendingQueries.delete(-1)
+      }
+      if (type === 'importResult') {
+        const pending = this.pendingQueries.get(-2)
+        pending?.resolve(undefined)
+        this.pendingQueries.delete(-2)
+      }
+      if (type === 'importError') {
+        const pending = this.pendingQueries.get(-2)
+        pending?.reject(new Error(error))
+        this.pendingQueries.delete(-2)
       }
     }
 
@@ -146,6 +167,30 @@ export class DatabaseWorkerClient implements DatabaseClientInterface {
       this.readyResolver = resolve
       this.readyRejecter = reject
       this.worker.postMessage({ type: 'init', payload: { dbName } })
+    })
+  }
+
+  async exportData(): Promise<
+    Awaited<ReturnType<ImportExportRepository['exportAll']>>
+  > {
+    return new Promise((resolve, reject) => {
+      this.pendingQueries.set(-1, {
+        resolve: resolve as (val: unknown) => void,
+        reject,
+      })
+      this.worker.postMessage({ type: 'export' })
+    })
+  }
+
+  async importData(
+    data: Parameters<ImportExportRepository['importAll']>[0],
+  ): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.pendingQueries.set(-2, {
+        resolve: resolve as (val: unknown) => void,
+        reject,
+      })
+      this.worker.postMessage({ type: 'import', payload: { data } })
     })
   }
 }

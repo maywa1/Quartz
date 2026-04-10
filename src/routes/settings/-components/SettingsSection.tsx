@@ -32,12 +32,12 @@ export function SettingsSection({
       <div className="mb-5">
         <h2
           id={`section-${title.toLowerCase().replace(/\s+/g, "-")}`}
-          className="text-sm font-medium tracking-widest uppercase text-[--q-green-deep] opacity-60"
+          className="text-sm font-medium tracking-widest uppercase text-(--q-green-deep) opacity-60"
         >
           {title}
         </h2>
         {description && (
-          <p className="mt-1 text-sm text-[--q-text-muted] font-light leading-relaxed">
+          <p className="mt-1 text-sm text-(--q-text-muted) font-light leading-relaxed">
             {description}
           </p>
         )}

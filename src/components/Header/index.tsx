@@ -1,47 +1,34 @@
-import { useState } from 'react'
 import { Link } from '@tanstack/react-router'
-import { Settings, Sun, Moon } from 'lucide-react'
+import { Settings  } from 'lucide-react'
 import { Text } from '../ui'
 import { cn } from '../ui/cn'
 import './Header.css'
+import { Logo } from '../Logo'
 
 interface HeaderProps {
   className?: string
 }
 
 export default function Header({ className }: HeaderProps) {
-  const [isDark, setIsDark] = useState(false)
+  // const [isDark, setIsDark] = useState(false)
 
-  function toggleTheme() {
-    const newTheme = !isDark
-    setIsDark(newTheme)
-    document.documentElement.classList.remove('light', 'dark')
-    document.documentElement.classList.add(newTheme ? 'dark' : 'light')
-    document.documentElement.setAttribute(
-      'data-theme',
-      newTheme ? 'dark' : 'light',
-    )
-    document.documentElement.style.colorScheme = newTheme ? 'dark' : 'light'
-  }
-
+  // function toggleTheme() {
+  //   const newTheme = !isDark
+  //   setIsDark(newTheme)
+  //   document.documentElement.classList.remove('light', 'dark')
+  //   document.documentElement.classList.add(newTheme ? 'dark' : 'light')
+  //   document.documentElement.setAttribute(
+  //     'data-theme',
+  //     newTheme ? 'dark' : 'light',
+  //   )
+  //   document.documentElement.style.colorScheme = newTheme ? 'dark' : 'light'
+  // }
+  //
   return (
     <header className={cn('q-header', className)}>
       <div className="q-header__logo px-8">
         <Link to="/" className="q-header__logo-link">
-          <svg
-            className="q-header__logo-icon"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2" />
-            <line x1="12" y1="22" x2="12" y2="15.5" />
-            <polyline points="22 8.5 12 15.5 2 8.5" />
-          </svg>
+          <Logo className="w-8 h-8 text-(--q-green-mid)" />
           <Text variant="heading" as="span">
             Quartz
           </Text>

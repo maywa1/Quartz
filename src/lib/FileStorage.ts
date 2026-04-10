@@ -1,5 +1,3 @@
-import { defaultShapeUtils, createTLStore } from 'tldraw'
-
 export class FileStorage {
   private static async getOpfsRoot(): Promise<FileSystemDirectoryHandle> {
     return navigator.storage.getDirectory()
@@ -108,11 +106,6 @@ export class FileStorage {
     const root = await this.getOpfsRoot()
     await root.removeEntry(id, { recursive: true })
   }
-  //
-  // static buildNotePath(id: string): string {
-  //   return `${id}/note.tldr`
-  // }
-  //
   static buildPdfPath(id: string): string {
     return `${id}/document.pdf`
   }
@@ -121,8 +114,3 @@ export class FileStorage {
     return `${id}/${fileName}`
   }
 }
-
-export const DEFAULT_TLDRAW_CONTENT = (() => {
-  const store = createTLStore({ shapeUtils: defaultShapeUtils })
-  return JSON.stringify(store.getStoreSnapshot())
-})()

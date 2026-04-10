@@ -68,7 +68,7 @@ export function useSearchNotes(query: string) {
 export function useNote(id: string) {
   const db = useDatabase()
 
-    if (!id) {
+  if (!id) {
     return { data: null, isLoading: true }
   }
 
@@ -134,7 +134,9 @@ export function useUpdateNote() {
   })
 }
 
-async function deleteTldrawDocument(drawingId: string): Promise<boolean> {
+export async function deleteTldrawDocument(
+  drawingId: string,
+): Promise<boolean> {
   if (!drawingId) {
     throw new Error('drawingId is required')
   }
@@ -148,16 +150,17 @@ async function deleteTldrawDocument(drawingId: string): Promise<boolean> {
   const databases = await indexedDB.databases()
 
   const targets = databases
-    .map(db => db.name)
-    .filter((name): name is string =>
-      !!name && patterns.some(pattern => name === pattern)
+    .map((db) => db.name)
+    .filter(
+      (name): name is string =>
+        !!name && patterns.some((pattern) => name === pattern),
     )
 
   if (targets.length === 0) return false
 
   console.log(targets)
   await Promise.allSettled(
-    targets.map(name => {
+    targets.map((name) => {
       return new Promise<void>((resolve, reject) => {
         const req = indexedDB.deleteDatabase(name)
 
@@ -168,7 +171,7 @@ async function deleteTldrawDocument(drawingId: string): Promise<boolean> {
           resolve()
         }
       })
-    })
+    }),
   )
 
   return true

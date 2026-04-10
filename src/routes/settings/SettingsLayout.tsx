@@ -61,13 +61,13 @@ interface EmptyPanelProps {
 
 function EmptyPanel({ label }: EmptyPanelProps) {
   return (
-    <div className="flex flex-col items-center justify-center py-24 gap-3 rounded-2xl border border-dashed border-[--q-border]">
-      <div className="w-10 h-10 rounded-xl bg-[--q-green-pale] flex items-center justify-center">
+    <div className="flex flex-col items-center justify-center py-24 gap-3 rounded-2xl border border-dashed border-(--q-border)">
+      <div className="w-10 h-10 rounded-xl bg-(--q-green-pale) flex items-center justify-center">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--q-green-deep)" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
           <path d="M12 5v14M5 12h14" />
         </svg>
       </div>
-      <p className="text-sm text-[--q-text-muted] font-light">
+      <p className="text-sm text-(--q-text-muted) font-light">
         {label} settings coming soon.
       </p>
     </div>
