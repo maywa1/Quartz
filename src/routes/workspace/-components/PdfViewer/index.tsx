@@ -1,13 +1,12 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import * as pdfjsLib from 'pdfjs-dist'
-import { Notebook, Map } from 'lucide-react'
-import { useNavigate } from '@tanstack/react-router'
 import { useNotesByPdf, useCreateNote } from '#/hooks'
 import { FileStorage } from '#/lib/FileStorage'
 import { useWorkspace } from '#/context/WorkspaceContext'
 import { PromptDialog } from '#/components/ui/Dialog'
 import { Button } from '#/components/ui/Button/Button'
 import type { PDF, Note } from '#/types/types'
+import LongPressRing from './LongPressRing'
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.mjs',
@@ -26,7 +25,6 @@ interface Coordinates {
 }
 
 export default function PdfViewer({ pdf, initialPage }: Props) {
-  const navigate = useNavigate()
   const [showNoteDialog, setShowNoteDialog] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
@@ -40,6 +38,22 @@ export default function PdfViewer({ pdf, initialPage }: Props) {
   const notesQuery = useNotesByPdf(pdf.id)
   const createNoteMutation = useCreateNote()
   const notes = notesQuery.data ?? []
+
+  // Long-press ring state
+  const [ringState, setRingState] = useState<{
+    visible: boolean
+    x: number
+    y: number
+    progress: number
+  }>({ visible: false, x: 0, y: 0, progress: 0 })
+
+  const holdTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const holdStartRef = useRef<number>(0)
+  const holdPosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 })
+  const holdPageRef = useRef<number>(0)
+  const holdPdfCoordsRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 })
+  const isHoldingRef = useRef(false)
+  const HOLD_DURATION = 600 // ms to fill ring
 
   useEffect(() => {
     setActivePdfId(pdf.id)
@@ -78,44 +92,22 @@ export default function PdfViewer({ pdf, initialPage }: Props) {
     }
   }
 
+  // --- Touch/pen scroll ---
+
   const isDraggingRef = useRef(false)
   const startPosRef = useRef({ x: 0, y: 0 })
   const scrollStartRef = useRef({ x: 0, y: 0 })
   const lastMoveTimeRef = useRef(0)
   const velocityRef = useRef({ x: 0, y: 0 })
-  const [isMenuVisible, setIsMenuVisible] = useState(false)
 
-  const menuItems = useMemo(
-    () => [
-      {
-        icon: Notebook,
-        label: 'Create Note',
-        action: () => {
-          if (!noteCoordinates) return
-          setShowNoteDialog(true)
-        },
-      },
-      {
-        icon: Map,
-        label: 'View Projects',
-        action: () => navigate({ to: '/' }),
-      },
-    ],
-    [noteCoordinates, navigate],
-  )
-
-  useEffect(() => {
-    const observer = new MutationObserver(() => {
-      const exists = document.querySelector('.fixed.z-50')
-      const menuVisible = !!exists
-      if (menuVisible && !isMenuVisible) {
-        isDraggingRef.current = false
-      }
-      setIsMenuVisible(menuVisible)
-    })
-    observer.observe(document.body, { childList: true, subtree: true })
-    return () => observer.disconnect()
-  }, [isMenuVisible])
+  const cancelHold = useCallback(() => {
+    if (holdTimerRef.current) {
+      clearInterval(holdTimerRef.current)
+      holdTimerRef.current = null
+    }
+    isHoldingRef.current = false
+    setRingState({ visible: false, x: 0, y: 0, progress: 0 })
+  }, [])
 
   const handlePointerDown = useCallback((e: PointerEvent) => {
     if (e.pointerType === 'pen' || e.pointerType === 'touch') {
@@ -130,27 +122,33 @@ export default function PdfViewer({ pdf, initialPage }: Props) {
     }
   }, [])
 
-  const handlePointerMove = useCallback((e: PointerEvent) => {
-    if (!isDraggingRef.current || !scrollContainerRef.current) return
-    const currentTime = Date.now()
-    const deltaTime = currentTime - lastMoveTimeRef.current
-    const deltaX = startPosRef.current.x - e.clientX
-    const deltaY = startPosRef.current.y - e.clientY
-    if (deltaTime > 0) {
-      velocityRef.current = { x: deltaX / deltaTime, y: deltaY / deltaTime }
-    }
-    scrollContainerRef.current.scrollLeft = scrollStartRef.current.x + deltaX
-    scrollContainerRef.current.scrollTop = scrollStartRef.current.y + deltaY
-    lastMoveTimeRef.current = currentTime
-  }, [])
+  const handlePointerMove = useCallback(
+    (e: PointerEvent) => {
+      if (!isDraggingRef.current || !scrollContainerRef.current) return
+      const currentTime = Date.now()
+      const deltaTime = currentTime - lastMoveTimeRef.current
+      const deltaX = startPosRef.current.x - e.clientX
+      const deltaY = startPosRef.current.y - e.clientY
+      if (deltaTime > 0) {
+        velocityRef.current = { x: deltaX / deltaTime, y: deltaY / deltaTime }
+      }
+      const dist = Math.sqrt(deltaX * deltaX + deltaY * deltaY)
+      if (dist > 8 && isHoldingRef.current) cancelHold()
+      scrollContainerRef.current.scrollLeft = scrollStartRef.current.x + deltaX
+      scrollContainerRef.current.scrollTop = scrollStartRef.current.y + deltaY
+      lastMoveTimeRef.current = currentTime
+    },
+    [cancelHold],
+  )
 
   const handlePointerUp = useCallback(() => {
     isDraggingRef.current = false
-  }, [])
+    cancelHold()
+  }, [cancelHold])
 
   useEffect(() => {
     const scrollContainer = scrollContainerRef.current
-    if (!scrollContainer || isMenuVisible) return
+    if (!scrollContainer) return
     scrollContainer.addEventListener('pointerdown', handlePointerDown)
     window.addEventListener('pointermove', handlePointerMove)
     window.addEventListener('pointerup', handlePointerUp)
@@ -161,11 +159,59 @@ export default function PdfViewer({ pdf, initialPage }: Props) {
       window.removeEventListener('pointerup', handlePointerUp)
       window.removeEventListener('pointercancel', handlePointerUp)
     }
-  }, [isMenuVisible, handlePointerDown, handlePointerMove, handlePointerUp])
+  }, [handlePointerDown, handlePointerMove, handlePointerUp])
 
-  const handleCanvasClick = useCallback(
+  // Cancel hold when mouse moves too far or is released
+  useEffect(() => {
+    const onUp = () => cancelHold()
+    const onMove = (e: MouseEvent) => {
+      if (!isHoldingRef.current) return
+      const dx = e.clientX - holdPosRef.current.x
+      const dy = e.clientY - holdPosRef.current.y
+      if (Math.sqrt(dx * dx + dy * dy) > 8) cancelHold()
+    }
+    window.addEventListener('mouseup', onUp)
+    window.addEventListener('mousemove', onMove)
+    return () => {
+      window.removeEventListener('mouseup', onUp)
+      window.removeEventListener('mousemove', onMove)
+    }
+  }, [cancelHold])
+
+  const startHold = useCallback(
+    (clientX: number, clientY: number, pageNum: number, pdfX: number, pdfY: number) => {
+      cancelHold()
+      isHoldingRef.current = true
+      holdStartRef.current = Date.now()
+      holdPosRef.current = { x: clientX, y: clientY }
+      holdPageRef.current = pageNum
+      holdPdfCoordsRef.current = { x: pdfX, y: pdfY }
+
+      setRingState({ visible: true, x: clientX, y: clientY, progress: 0 })
+
+      holdTimerRef.current = setInterval(() => {
+        if (!isHoldingRef.current) return
+        const elapsed = Date.now() - holdStartRef.current
+        const progress = Math.min(elapsed / HOLD_DURATION, 1)
+        setRingState({ visible: true, x: clientX, y: clientY, progress })
+
+        if (progress >= 1) {
+          cancelHold()
+          setNoteCoordinates({
+            x: holdPdfCoordsRef.current.x,
+            y: holdPdfCoordsRef.current.y,
+            page: holdPageRef.current,
+          })
+          setShowNoteDialog(true)
+        }
+      }, 16)
+    },
+    [cancelHold],
+  )
+
+  const handleCanvasMouseDown = useCallback(
     async (e: MouseEvent, pageNum: number) => {
-      if (isDraggingRef.current) return
+      if (e.button !== 0) return
       if (!pdfDoc) return
 
       const canvas = e.target as HTMLCanvasElement
@@ -179,6 +225,7 @@ export default function PdfViewer({ pdf, initialPage }: Props) {
       const pdfX = x / scale
       const pdfY = (viewport.height - y) / scale
 
+      // Tap an existing note marker
       const pageNotes = notesPerPageRef.current[pageNum]
       if (pageNotes) {
         for (const note of pageNotes) {
@@ -195,22 +242,17 @@ export default function PdfViewer({ pdf, initialPage }: Props) {
         }
       }
 
-      setNoteCoordinates({ x: pdfX, y: pdfY, page: pageNum })
+      startHold(e.clientX, e.clientY, pageNum, pdfX, pdfY)
     },
-    [pdfDoc, scale, setActiveNoteId],
+    [pdfDoc, scale, setActiveNoteId, startHold],
   )
 
   const drawNotesOnPage = useCallback(
-    (
-      context: CanvasRenderingContext2D,
-      viewport: pdfjsLib.PageViewport,
-      pageNum: number,
-    ) => {
+    (context: CanvasRenderingContext2D, viewport: pdfjsLib.PageViewport, pageNum: number) => {
       const pageNotes: Note[] = []
       notes.forEach((note) => {
         if (!note.pdf_coordinate_x || !note.pdf_coordinate_y || !note.pdf_page) return
         if (note.pdf_page !== pageNum) return
-
         pageNotes.push(note)
 
         const canvasX = note.pdf_coordinate_x * scale
@@ -250,11 +292,10 @@ export default function PdfViewer({ pdf, initialPage }: Props) {
 
       canvas.width = viewport.width
       canvas.height = viewport.height
-      canvas.className = 'cursor-crosshair border border-gray-300'
+      canvas.className = 'cursor-crosshair border border-gray-300 select-none'
       canvas.dataset.pageNumber = pageNum.toString()
 
-      const clickHandler = (e: MouseEvent) => handleCanvasClick(e, pageNum)
-      canvas.addEventListener('pointerdown', clickHandler)
+      canvas.addEventListener('mousedown', (e) => handleCanvasMouseDown(e, pageNum))
 
       placeholder.style.width = `${viewport.width}px`
       placeholder.style.height = `${viewport.height}px`
@@ -270,18 +311,15 @@ export default function PdfViewer({ pdf, initialPage }: Props) {
         })
       }
     },
-    [pdfDoc, scale, handleCanvasClick, drawNotesOnPage, initialPage],
+    [pdfDoc, scale, handleCanvasMouseDown, drawNotesOnPage, initialPage],
   )
 
-  // Load the PDF document
+  // Load PDF
   useEffect(() => {
     let isMounted = true
-
     const loadPdf = async () => {
       try {
-        if (containerRef.current) {
-          containerRef.current.innerHTML = ''
-        }
+        if (containerRef.current) containerRef.current.innerHTML = ''
         setPdfDoc(null)
         setNumPages(0)
 
@@ -302,22 +340,15 @@ export default function PdfViewer({ pdf, initialPage }: Props) {
         }
       }
     }
-
     loadPdf()
-
-    return () => {
-      isMounted = false
-    }
+    return () => { isMounted = false }
   }, [pdf.id])
 
-  // Build placeholders and set up IntersectionObserver for virtualization
+  // Build placeholders + IntersectionObserver
   useEffect(() => {
     if (!pdfDoc || !containerRef.current || !scrollContainerRef.current) return
 
-    // Disconnect any previous observer
-    if (observerRef.current) {
-      observerRef.current.disconnect()
-    }
+    if (observerRef.current) observerRef.current.disconnect()
 
     containerRef.current.innerHTML = ''
     notesPerPageRef.current = {}
@@ -325,7 +356,6 @@ export default function PdfViewer({ pdf, initialPage }: Props) {
 
     const placeholders: HTMLDivElement[] = []
 
-    // Create sized placeholder divs for each page
     const buildPlaceholders = async () => {
       if (!containerRef.current) return
 
@@ -334,7 +364,6 @@ export default function PdfViewer({ pdf, initialPage }: Props) {
         placeholder.dataset.pageNumber = pageNum.toString()
         placeholder.className = 'mb-4 mx-auto bg-gray-200'
 
-        // Pre-size the placeholder to prevent layout shift when canvas swaps in
         const page = await pdfDoc.getPage(pageNum)
         const viewport = page.getViewport({ scale })
         placeholder.style.width = `${viewport.width}px`
@@ -344,7 +373,6 @@ export default function PdfViewer({ pdf, initialPage }: Props) {
         placeholders.push(placeholder)
       }
 
-      // Set up IntersectionObserver after all placeholders exist
       const observer = new IntersectionObserver(
         (entries) => {
           for (const entry of entries) {
@@ -358,7 +386,6 @@ export default function PdfViewer({ pdf, initialPage }: Props) {
         },
         {
           root: scrollContainerRef.current,
-          // Pre-render one viewport-height above and below for smoother scrolling
           rootMargin: '200px 0px 200px 0px',
           threshold: 0,
         },
@@ -371,26 +398,19 @@ export default function PdfViewer({ pdf, initialPage }: Props) {
     buildPlaceholders()
 
     return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect()
-      }
-      if (containerRef.current) {
-        containerRef.current.innerHTML = ''
-      }
+      if (observerRef.current) observerRef.current.disconnect()
+      if (containerRef.current) containerRef.current.innerHTML = ''
     }
   }, [pdfDoc, numPages, scale, renderPage])
 
-  // When notes change, re-render only already-rendered pages so markers update
+  // Re-render visible pages when notes change
   useEffect(() => {
     if (!pdfDoc || !containerRef.current) return
-
     for (const pageNum of renderedPagesRef.current) {
       const placeholder = containerRef.current.querySelector(
         `[data-page-number="${pageNum}"]`,
       ) as HTMLDivElement | null
       if (!placeholder) continue
-
-      // Clear rendered state so renderPage will run again
       renderedPagesRef.current.delete(pageNum)
       renderedPagesRef.current.add(pageNum)
       renderPage(pageNum, placeholder)
@@ -398,33 +418,32 @@ export default function PdfViewer({ pdf, initialPage }: Props) {
   }, [notes, pdfDoc, renderPage])
 
   return (
-    <PieMenuWrapper items={menuItems}>
-      <div className="w-full h-dvh bg-white text-(--q-text)">
-        <div className="p-2 h-full flex flex-col">
-          <div className="mb-2 flex flex-wrap gap-4 items-center">
-            <span className="text-sm">
-              {numPages > 0 ? `${numPages} pages` : 'No PDF loaded'}
-            </span>
-            <Button onClick={() => setScale(scale + 0.25)} variant="ghost">
-              Zoom In
-            </Button>
-            <Button
-              onClick={() => setScale(Math.max(0.5, scale - 0.25))}
-              variant="ghost"
-            >
-              Zoom Out
-            </Button>
-          </div>
+    <div className="w-full h-dvh bg-white text-(--q-text)">
+      <div className="p-2 h-full flex flex-col">
+        <div className="mb-2 flex flex-wrap gap-4 items-center">
+          <span className="text-sm">
+            {numPages > 0 ? `${numPages} pages` : 'No PDF loaded'}
+          </span>
+          <Button onClick={() => setScale(scale + 0.25)} variant="ghost">
+            Zoom In
+          </Button>
+          <Button onClick={() => setScale(Math.max(0.5, scale - 0.25))} variant="ghost">
+            Zoom Out
+          </Button>
+        </div>
 
-          <div
-            ref={scrollContainerRef}
-            className="flex-1 overflow-auto rounded-md p-4 bg-gray-100"
-            style={{ touchAction: 'none' }}
-          >
-            <div ref={containerRef} />
-          </div>
+        <div
+          ref={scrollContainerRef}
+          className="flex-1 overflow-auto rounded-md p-4 bg-gray-100"
+          style={{ touchAction: 'none' }}
+        >
+          <div ref={containerRef} />
         </div>
       </div>
+
+      {ringState.visible && (
+        <LongPressRing x={ringState.x} y={ringState.y} progress={ringState.progress} />
+      )}
 
       <PromptDialog
         isOpen={showNoteDialog}
@@ -435,280 +454,6 @@ export default function PdfViewer({ pdf, initialPage }: Props) {
         confirmText="Create"
         onConfirm={handleNoteSubmit}
       />
-    </PieMenuWrapper>
-  )
-}
-
-interface PieMenuWrapperProps {
-  items: Array<{
-    icon: React.ComponentType<{ className?: string }>
-    label: string
-    action: () => void
-  }>
-  children: React.ReactNode
-}
-
-function PieMenuWrapper({ items, children }: PieMenuWrapperProps) {
-  const [menuState, setMenuState] = useState({
-    visible: false,
-    x: 0,
-    y: 0,
-    selectedIndex: null as number | null,
-  })
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
-
-  const containerRef = useRef<HTMLDivElement>(null)
-  const holdTimerRef = useRef<NodeJS.Timeout | null>(null)
-  const mouseDownPosRef = useRef({ x: 0, y: 0 })
-  const isHoldingRef = useRef(false)
-  const hoveredIndexRef = useRef<number | null>(null)
-  const selectedIndexRef = useRef<number | null>(null)
-  const menuStateRef = useRef(menuState)
-
-  const HOVER_RADIUS = 40
-  const holdDuration = 400
-  const movementThreshold = 5
-  const radius = 110
-
-  useEffect(() => {
-    hoveredIndexRef.current = hoveredIndex
-  }, [hoveredIndex])
-
-  useEffect(() => {
-    menuStateRef.current = menuState
-    selectedIndexRef.current = menuState.selectedIndex
-  }, [menuState])
-
-  useEffect(() => {
-    const container = containerRef.current
-    if (!container) return
-
-    const handleMouseDown = (e: MouseEvent) => {
-      if (e.button !== 0) return
-      mouseDownPosRef.current = { x: e.clientX, y: e.clientY }
-      isHoldingRef.current = true
-
-      holdTimerRef.current = setTimeout(() => {
-        if (isHoldingRef.current) {
-          setMenuState({
-            visible: true,
-            x: e.clientX,
-            y: e.clientY,
-            selectedIndex: null,
-          })
-        }
-      }, holdDuration)
-    }
-
-    const handleMouseMove = (e: MouseEvent) => {
-      if (isHoldingRef.current && !menuStateRef.current.visible) {
-        const dx = e.clientX - mouseDownPosRef.current.x
-        const dy = e.clientY - mouseDownPosRef.current.y
-        const distance = Math.sqrt(dx * dx + dy * dy)
-        if (distance > movementThreshold) {
-          if (holdTimerRef.current) clearTimeout(holdTimerRef.current)
-          isHoldingRef.current = false
-          return
-        }
-      }
-
-      if (menuStateRef.current.visible) {
-        const dx = e.clientX - menuStateRef.current.x
-        const dy = e.clientY - menuStateRef.current.y
-        const distance = Math.sqrt(dx * dx + dy * dy)
-
-        let foundHover = false
-        for (let i = 0; i < items.length; i++) {
-          const pos = getItemPosition(i, items.length, radius)
-          const buttonX = menuStateRef.current.x + pos.x
-          const buttonY = menuStateRef.current.y + pos.y
-          const buttonDist = Math.sqrt(
-            Math.pow(e.clientX - buttonX, 2) + Math.pow(e.clientY - buttonY, 2),
-          )
-
-          if (buttonDist <= HOVER_RADIUS) {
-            setHoveredIndex(i)
-            setMenuState((prev) => ({ ...prev, selectedIndex: null }))
-            foundHover = true
-            break
-          }
-        }
-
-        if (!foundHover) {
-          setHoveredIndex(null)
-          if (distance > 40) {
-            const angle = Math.atan2(dy, dx)
-            const normalizedAngle = (angle + Math.PI * 2) % (Math.PI * 2)
-            const segmentAngle = (Math.PI * 2) / items.length
-            const index =
-              Math.floor((normalizedAngle + segmentAngle / 2) / segmentAngle) %
-              items.length
-            setMenuState((prev) => ({ ...prev, selectedIndex: index }))
-          } else {
-            setMenuState((prev) => ({ ...prev, selectedIndex: null }))
-          }
-        }
-      }
-    }
-
-    const handleMouseUp = () => {
-      if (holdTimerRef.current) clearTimeout(holdTimerRef.current)
-      isHoldingRef.current = false
-
-      if (menuStateRef.current.visible) {
-        const hoveredIdx = hoveredIndexRef.current
-        const selectedIdx = selectedIndexRef.current
-        const indexToExecute = hoveredIdx !== null ? hoveredIdx : selectedIdx
-
-        setMenuState({ visible: false, x: 0, y: 0, selectedIndex: null })
-        setHoveredIndex(null)
-
-        if (indexToExecute !== null) {
-          items[indexToExecute].action()
-        }
-      }
-    }
-
-    container.addEventListener('mousedown', handleMouseDown)
-    window.addEventListener('mousemove', handleMouseMove)
-    window.addEventListener('mouseup', handleMouseUp)
-
-    return () => {
-      container.removeEventListener('mousedown', handleMouseDown)
-      window.removeEventListener('mousemove', handleMouseMove)
-      window.removeEventListener('mouseup', handleMouseUp)
-      if (holdTimerRef.current) clearTimeout(holdTimerRef.current)
-    }
-  }, [items, holdDuration, movementThreshold, radius])
-
-  const getItemPosition = (index: number, total: number, radius: number) => {
-    const angle = (Math.PI * 2 * index) / total - Math.PI / 2
-    return {
-      x: Math.cos(angle) * radius,
-      y: Math.sin(angle) * radius,
-    }
-  }
-
-  return (
-    <div ref={containerRef} className="relative w-full h-full">
-      {children}
-
-      {menuState.visible && (
-        <div
-          className="fixed z-50"
-          style={{
-            left: menuState.x,
-            top: menuState.y,
-            transform: 'translate(-50%, -50%)',
-          }}
-        >
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-(--q-green-deep) rounded-full shadow-lg" />
-
-          {items.map((item, index) => {
-            const pos = getItemPosition(index, items.length, radius)
-            const isSelected = menuState.selectedIndex === index
-            const isHovered = hoveredIndex === index
-            const IconComponent = item.icon
-
-            return (
-              <div
-                key={index}
-                className="absolute"
-                style={{
-                  left: '50%',
-                  top: '50%',
-                  transform: `translate(calc(-50% + ${pos.x}px), calc(-50% + ${pos.y}px))`,
-                }}
-              >
-                <div
-                  className={`
-                    relative flex items-center justify-center w-14 h-14 rounded-full
-                    bg-(--q-green-pale) border border-(--q-border)
-                    shadow-lg cursor-pointer
-                    transition-all duration-200 ease-out
-                    ${
-                      isHovered
-                        ? 'scale-110 bg-(--q-green-lite) border-(--q-green-mid) shadow-xl'
-                        : isSelected
-                          ? 'scale-105 bg-(--q-green-pale) border-(--q-green-mid)'
-                          : 'hover:scale-105 hover:bg-(--q-green-lite) hover:border-(--q-green-mid)'
-                    }
-                  `}
-                >
-                  <IconComponent
-                    className={`
-                      w-5 h-5 transition-all duration-200
-                      ${
-                        isHovered
-                          ? 'text-(--q-green-deep) scale-110'
-                          : isSelected
-                            ? 'text-(--q-green-deep)'
-                            : 'text-(--q-green-deep)'
-                      }
-                    `}
-                  />
-                </div>
-
-                {(isHovered || isSelected) && (
-                  <div
-                    className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap pointer-events-none z-10"
-                    style={{
-                      top: pos.y > 0 ? '100%' : 'auto',
-                      bottom: pos.y <= 0 ? '100%' : 'auto',
-                      marginTop: pos.y > 0 ? '8px' : '0',
-                      marginBottom: pos.y <= 0 ? '8px' : '0',
-                    }}
-                  >
-                    <div className="bg-(--q-bg) border border-(--q-border) px-3 py-1.5 rounded-lg shadow-xl animate-in fade-in zoom-in-95 duration-150">
-                      <span className="text-sm font-medium text-(--q-text)">
-                        {item.label}
-                      </span>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )
-          })}
-
-          <svg
-            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-            width={radius * 2.2}
-            height={radius * 2.2}
-            style={{ opacity: 0.15 }}
-          >
-            {items.map((_, index) => {
-              const pos = getItemPosition(index, items.length, radius)
-              const center = radius * 1.1
-              return (
-                <line
-                  key={index}
-                  x1={center}
-                  y1={center}
-                  x2={center + pos.x}
-                  y2={center + pos.y}
-                  stroke="currentColor"
-                  strokeWidth="1"
-                  className="text-(--q-green-mid)"
-                />
-              )
-            })}
-          </svg>
-
-          <style>{`
-            @keyframes fade-in {
-              from { opacity: 0; }
-              to { opacity: 1; }
-            }
-            @keyframes zoom-in-95 {
-              from { transform: scale(0.95); }
-              to { transform: scale(1); }
-            }
-            .animate-in {
-              animation: fade-in 150ms ease-out, zoom-in-95 150ms ease-out;
-            }
-          `}</style>
-        </div>
-      )}
     </div>
   )
 }

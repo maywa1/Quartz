@@ -51,13 +51,8 @@ export function AboutPanel() {
       {/* Description */}
       <div className="flex flex-col gap-3">
         <p className="text-sm font-light text-(--q-text) leading-relaxed">
-          Quartz is a calm environment for mathematical thinking — built for
-          students, researchers, and anyone who works with formulas daily.
-          Write notes, capture theorems, and organise your mathematical
-          knowledge without distraction.
-        </p>
-        <p className="text-sm font-light text-(--q-text-muted) leading-relaxed">
-          Built with React, TypeScript, and a deep respect for whitespace.
+          Quartz gives you a clean place to think through maths. Take notes, save useful
+          ideas, and keep everything in one spot without distractions :)
         </p>
       </div>
 
@@ -67,13 +62,14 @@ export function AboutPanel() {
           Resources
         </p>
         {[
-          { label: "Documentation", href: "#" },
-          { label: "Changelog", href: "#" },
-          { label: "Report an issue", href: "#" },
-          { label: "Source code", href: "#" },
+          /* { label: "Documentation", href: "#" }, */
+          /* { label: "Changelog", href: "#" }, */
+          { label: "Report an issue", href: "https://github.com/maywa1/Quartz-V2/issues/new" },
+          { label: "Source code", href: "https://github.com/maywa1/Quartz-V2.git" },
         ].map(({ label, href }) => (
           <a
             key={label}
+            target="_blank"
             href={href}
             className="text-sm font-light text-(--q-green-deep) hover:underline underline-offset-4 w-fit transition-opacity hover:opacity-80"
           >

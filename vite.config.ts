@@ -4,6 +4,8 @@ import tsconfigPaths from 'vite-tsconfig-paths'
 import { tanstackRouter } from '@tanstack/router-plugin/vite'
 import viteReact from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import { VitePWA } from 'vite-plugin-pwa'
+
 
 const config = defineConfig({
   plugins: [
@@ -12,18 +14,7 @@ const config = defineConfig({
     tailwindcss(),
     tanstackRouter(),
     viteReact(),
-    // viteStaticCopy({
-    //   targets: [
-    //     {
-    //       src: 'node_modules/wa-sqlite/dist/wa-sqlite.wasm',
-    //       dest: '.',
-    //     },
-    //     {
-    //       src: 'node_modules/wa-sqlite/dist/wa-sqlite-async.wasm',
-    //       dest: '.',
-    //     }
-    //   ],
-    // }),
+    VitePWA({ registerType: 'autoUpdate' }),
   ],
   optimizeDeps: {
     exclude: ['wa-sqlite'],
