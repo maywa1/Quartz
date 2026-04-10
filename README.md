@@ -9,6 +9,7 @@ The project is far from done. The structure, features, and even core systems mig
 Contributions are welcome :)
 
 *(I won't be developing much now because the app is in a usable state and I'm currently studying for some exams using it)*
+
 ---
 # TODO
 - Dark Mode / Appearance options
