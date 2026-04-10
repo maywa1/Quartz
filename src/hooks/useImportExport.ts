@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { FileStorage } from '#/lib/FileStorage'
 import { APP_VERSION, SCHEMA_VERSION } from '#/utils/config'
 import { useDatabase } from '#/providers'
@@ -320,6 +321,7 @@ function parseZip(buffer: ArrayBuffer): ZipFile[] {
 
 export function useImportExport() {
   const db = useDatabase()
+  const queryClient = useQueryClient()
 
   // Use existing hooks for data fetching
   const { data: notes = [] } = useNotes()
@@ -568,6 +570,7 @@ export function useImportExport() {
 
         // Use worker for import
         await db.importData(databaseDump)
+        await queryClient.invalidateQueries()
 
         setImportProgress({
           stage: 'database',

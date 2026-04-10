@@ -34,9 +34,7 @@ export default function PdfViewer({ pdf, initialPage }: Props) {
   const [pdfDoc, setPdfDoc] = useState<pdfjsLib.PDFDocumentProxy | null>(null)
   const [numPages, setNumPages] = useState(0)
   const [scale, setScale] = useState(1.5)
-  const [noteCoordinates, setNoteCoordinates] = useState<
-    Coordinates | undefined
-  >()
+  const [noteCoordinates, setNoteCoordinates] = useState<Coordinates | undefined>()
   const { setActiveNoteId, setActivePdfId } = useWorkspace()
 
   const notesQuery = useNotesByPdf(pdf.id)
@@ -51,18 +49,18 @@ export default function PdfViewer({ pdf, initialPage }: Props) {
     const style = getComputedStyle(document.documentElement)
     return {
       noteGold: style.getPropertyValue('--q-green-deep').trim() || '#166534',
-      noteGoldStroke:
-        style.getPropertyValue('--q-green-mid').trim() || '#22c55e',
+      noteGoldStroke: style.getPropertyValue('--q-green-mid').trim() || '#22c55e',
       noteMuted: style.getPropertyValue('--q-text-muted').trim() || '#4b5563',
       noteMutedStroke: style.getPropertyValue('--q-border').trim() || '#d1fae5',
     }
   }, [])
 
   const notesPerPageRef = useRef<{ [pageNum: number]: Note[] }>({})
+  const renderedPagesRef = useRef<Set<number>>(new Set())
+  const observerRef = useRef<IntersectionObserver | null>(null)
 
   const handleNoteSubmit = async (name: string) => {
     if (!noteCoordinates) return
-
     try {
       const noteId = await createNoteMutation.mutateAsync({
         name,
@@ -73,7 +71,6 @@ export default function PdfViewer({ pdf, initialPage }: Props) {
           page: noteCoordinates.page,
         },
       })
-
       setActiveNoteId(noteId)
       setShowNoteDialog(false)
     } catch (err) {
@@ -111,16 +108,12 @@ export default function PdfViewer({ pdf, initialPage }: Props) {
     const observer = new MutationObserver(() => {
       const exists = document.querySelector('.fixed.z-50')
       const menuVisible = !!exists
-
       if (menuVisible && !isMenuVisible) {
         isDraggingRef.current = false
       }
-
       setIsMenuVisible(menuVisible)
     })
-
     observer.observe(document.body, { childList: true, subtree: true })
-
     return () => observer.disconnect()
   }, [isMenuVisible])
 
@@ -139,19 +132,13 @@ export default function PdfViewer({ pdf, initialPage }: Props) {
 
   const handlePointerMove = useCallback((e: PointerEvent) => {
     if (!isDraggingRef.current || !scrollContainerRef.current) return
-
     const currentTime = Date.now()
     const deltaTime = currentTime - lastMoveTimeRef.current
     const deltaX = startPosRef.current.x - e.clientX
     const deltaY = startPosRef.current.y - e.clientY
-
     if (deltaTime > 0) {
-      velocityRef.current = {
-        x: deltaX / deltaTime,
-        y: deltaY / deltaTime,
-      }
+      velocityRef.current = { x: deltaX / deltaTime, y: deltaY / deltaTime }
     }
-
     scrollContainerRef.current.scrollLeft = scrollStartRef.current.x + deltaX
     scrollContainerRef.current.scrollTop = scrollStartRef.current.y + deltaY
     lastMoveTimeRef.current = currentTime
@@ -164,12 +151,10 @@ export default function PdfViewer({ pdf, initialPage }: Props) {
   useEffect(() => {
     const scrollContainer = scrollContainerRef.current
     if (!scrollContainer || isMenuVisible) return
-
     scrollContainer.addEventListener('pointerdown', handlePointerDown)
     window.addEventListener('pointermove', handlePointerMove)
     window.addEventListener('pointerup', handlePointerUp)
     window.addEventListener('pointercancel', handlePointerUp)
-
     return () => {
       scrollContainer.removeEventListener('pointerdown', handlePointerDown)
       window.removeEventListener('pointermove', handlePointerMove)
@@ -215,6 +200,80 @@ export default function PdfViewer({ pdf, initialPage }: Props) {
     [pdfDoc, scale, setActiveNoteId],
   )
 
+  const drawNotesOnPage = useCallback(
+    (
+      context: CanvasRenderingContext2D,
+      viewport: pdfjsLib.PageViewport,
+      pageNum: number,
+    ) => {
+      const pageNotes: Note[] = []
+      notes.forEach((note) => {
+        if (!note.pdf_coordinate_x || !note.pdf_coordinate_y || !note.pdf_page) return
+        if (note.pdf_page !== pageNum) return
+
+        pageNotes.push(note)
+
+        const canvasX = note.pdf_coordinate_x * scale
+        const canvasY = viewport.height - note.pdf_coordinate_y * scale
+
+        context.beginPath()
+        context.arc(canvasX, canvasY, 8, 0, 2 * Math.PI)
+        if (note.view_later) {
+          context.fillStyle = colors.noteGold
+          context.fill()
+          context.strokeStyle = colors.noteGoldStroke
+          context.lineWidth = 2
+          context.stroke()
+        } else {
+          context.fillStyle = colors.noteMuted
+          context.fill()
+          context.strokeStyle = colors.noteMutedStroke
+          context.lineWidth = 2
+          context.stroke()
+        }
+      })
+      notesPerPageRef.current[pageNum] = pageNotes
+    },
+    [notes, scale, colors],
+  )
+
+  const renderPage = useCallback(
+    async (pageNum: number, placeholder: HTMLDivElement) => {
+      if (!pdfDoc) return
+
+      const page = await pdfDoc.getPage(pageNum)
+      const viewport = page.getViewport({ scale })
+
+      const canvas = document.createElement('canvas')
+      const context = canvas.getContext('2d')
+      if (!context) return
+
+      canvas.width = viewport.width
+      canvas.height = viewport.height
+      canvas.className = 'cursor-crosshair border border-gray-300'
+      canvas.dataset.pageNumber = pageNum.toString()
+
+      const clickHandler = (e: MouseEvent) => handleCanvasClick(e, pageNum)
+      canvas.addEventListener('pointerdown', clickHandler)
+
+      placeholder.style.width = `${viewport.width}px`
+      placeholder.style.height = `${viewport.height}px`
+      placeholder.replaceChildren(canvas)
+
+      await page.render({ canvasContext: context, viewport, canvas }).promise
+
+      drawNotesOnPage(context, viewport, pageNum)
+
+      if (initialPage && pageNum === initialPage) {
+        requestAnimationFrame(() => {
+          canvas.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        })
+      }
+    },
+    [pdfDoc, scale, handleCanvasClick, drawNotesOnPage, initialPage],
+  )
+
+  // Load the PDF document
   useEffect(() => {
     let isMounted = true
 
@@ -251,91 +310,96 @@ export default function PdfViewer({ pdf, initialPage }: Props) {
     }
   }, [pdf.id])
 
+  // Build placeholders and set up IntersectionObserver for virtualization
   useEffect(() => {
-    const renderAllPages = async () => {
-      if (!pdfDoc || !containerRef.current) return
+    if (!pdfDoc || !containerRef.current || !scrollContainerRef.current) return
 
-      containerRef.current.innerHTML = ''
-      notesPerPageRef.current = {}
-
-      for (let pageNum = 1; pageNum <= numPages; pageNum++) {
-        const page = await pdfDoc.getPage(pageNum)
-        const viewport = page.getViewport({ scale })
-
-        const canvas = document.createElement('canvas')
-        const context = canvas.getContext('2d')
-        if (!context) continue
-
-        canvas.width = viewport.width
-        canvas.height = viewport.height
-        canvas.className =
-          'mb-4 mx-auto cursor-crosshair border border-gray-300'
-        canvas.dataset.pageNumber = pageNum.toString()
-
-        const clickHandler = (e: MouseEvent) => handleCanvasClick(e, pageNum)
-        canvas.addEventListener('pointerdown', clickHandler)
-
-        containerRef.current?.appendChild(canvas)
-
-        await page.render({
-          canvasContext: context,
-          viewport,
-          canvas,
-        }).promise
-
-        const pageNotes: Note[] = []
-        notes.forEach((note) => {
-          if (
-            !note.pdf_coordinate_x ||
-            !note.pdf_coordinate_y ||
-            !note.pdf_page
-          )
-            return
-          if (note.pdf_page !== pageNum) return
-
-          pageNotes.push(note)
-
-          const canvasX = note.pdf_coordinate_x * scale
-          const canvasY = viewport.height - note.pdf_coordinate_y * scale
-
-          context.beginPath()
-          context.arc(canvasX, canvasY, 8, 0, 2 * Math.PI)
-          if (note.view_later) {
-            context.fillStyle = colors.noteGold
-            context.fill()
-            context.strokeStyle = colors.noteGoldStroke
-            context.lineWidth = 2
-            context.stroke()
-          } else {
-            context.fillStyle = colors.noteMuted
-            context.fill()
-            context.strokeStyle = colors.noteMutedStroke
-            context.lineWidth = 2
-            context.stroke()
-          }
-        })
-        notesPerPageRef.current[pageNum] = pageNotes
-
-        if (initialPage && pageNum === initialPage) {
-          requestAnimationFrame(() => {
-            canvas.scrollIntoView({ behavior: 'smooth', block: 'start' })
-          })
-        }
-      }
+    // Disconnect any previous observer
+    if (observerRef.current) {
+      observerRef.current.disconnect()
     }
 
-    renderAllPages()
+    containerRef.current.innerHTML = ''
+    notesPerPageRef.current = {}
+    renderedPagesRef.current = new Set()
+
+    const placeholders: HTMLDivElement[] = []
+
+    // Create sized placeholder divs for each page
+    const buildPlaceholders = async () => {
+      if (!containerRef.current) return
+
+      for (let pageNum = 1; pageNum <= numPages; pageNum++) {
+        const placeholder = document.createElement('div')
+        placeholder.dataset.pageNumber = pageNum.toString()
+        placeholder.className = 'mb-4 mx-auto bg-gray-200'
+
+        // Pre-size the placeholder to prevent layout shift when canvas swaps in
+        const page = await pdfDoc.getPage(pageNum)
+        const viewport = page.getViewport({ scale })
+        placeholder.style.width = `${viewport.width}px`
+        placeholder.style.height = `${viewport.height}px`
+
+        containerRef.current.appendChild(placeholder)
+        placeholders.push(placeholder)
+      }
+
+      // Set up IntersectionObserver after all placeholders exist
+      const observer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (!entry.isIntersecting) continue
+            const el = entry.target as HTMLDivElement
+            const pageNum = Number(el.dataset.pageNumber)
+            if (renderedPagesRef.current.has(pageNum)) continue
+            renderedPagesRef.current.add(pageNum)
+            renderPage(pageNum, el)
+          }
+        },
+        {
+          root: scrollContainerRef.current,
+          // Pre-render one viewport-height above and below for smoother scrolling
+          rootMargin: '200px 0px 200px 0px',
+          threshold: 0,
+        },
+      )
+
+      observerRef.current = observer
+      placeholders.forEach((p) => observer.observe(p))
+    }
+
+    buildPlaceholders()
 
     return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect()
+      }
       if (containerRef.current) {
         containerRef.current.innerHTML = ''
       }
     }
-  }, [pdfDoc, numPages, scale, handleCanvasClick, initialPage, notes])
+  }, [pdfDoc, numPages, scale, renderPage])
+
+  // When notes change, re-render only already-rendered pages so markers update
+  useEffect(() => {
+    if (!pdfDoc || !containerRef.current) return
+
+    for (const pageNum of renderedPagesRef.current) {
+      const placeholder = containerRef.current.querySelector(
+        `[data-page-number="${pageNum}"]`,
+      ) as HTMLDivElement | null
+      if (!placeholder) continue
+
+      // Clear rendered state so renderPage will run again
+      renderedPagesRef.current.delete(pageNum)
+      renderedPagesRef.current.add(pageNum)
+      renderPage(pageNum, placeholder)
+    }
+  }, [notes, pdfDoc, renderPage])
 
   return (
     <PieMenuWrapper items={menuItems}>
-      <div className="w-full h-dvh bg-white text-[var(--q-text)]">
+      <div className="w-full h-dvh bg-white text-(--q-text)">
         <div className="p-2 h-full flex flex-col">
           <div className="mb-2 flex flex-wrap gap-4 items-center">
             <span className="text-sm">
@@ -441,7 +505,6 @@ function PieMenuWrapper({ items, children }: PieMenuWrapperProps) {
         const dx = e.clientX - mouseDownPosRef.current.x
         const dy = e.clientY - mouseDownPosRef.current.y
         const distance = Math.sqrt(dx * dx + dy * dy)
-
         if (distance > movementThreshold) {
           if (holdTimerRef.current) clearTimeout(holdTimerRef.current)
           isHoldingRef.current = false
@@ -539,7 +602,7 @@ function PieMenuWrapper({ items, children }: PieMenuWrapperProps) {
             transform: 'translate(-50%, -50%)',
           }}
         >
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-[var(--q-green-deep)] rounded-full shadow-lg" />
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-(--q-green-deep) rounded-full shadow-lg" />
 
           {items.map((item, index) => {
             const pos = getItemPosition(index, items.length, radius)
@@ -560,15 +623,15 @@ function PieMenuWrapper({ items, children }: PieMenuWrapperProps) {
                 <div
                   className={`
                     relative flex items-center justify-center w-14 h-14 rounded-full
-                    bg-[var(--q-green-pale)] border border-[var(--q-border)]
+                    bg-(--q-green-pale) border border-(--q-border)
                     shadow-lg cursor-pointer
                     transition-all duration-200 ease-out
                     ${
                       isHovered
-                        ? 'scale-110 bg-[var(--q-green-lite)] border-[var(--q-green-mid)] shadow-xl'
+                        ? 'scale-110 bg-(--q-green-lite) border-(--q-green-mid) shadow-xl'
                         : isSelected
-                          ? 'scale-105 bg-[var(--q-green-pale)] border-[var(--q-green-mid)]'
-                          : 'hover:scale-105 hover:bg-[var(--q-green-lite)] hover:border-[var(--q-green-mid)]'
+                          ? 'scale-105 bg-(--q-green-pale) border-(--q-green-mid)'
+                          : 'hover:scale-105 hover:bg-(--q-green-lite) hover:border-(--q-green-mid)'
                     }
                   `}
                 >
@@ -577,10 +640,10 @@ function PieMenuWrapper({ items, children }: PieMenuWrapperProps) {
                       w-5 h-5 transition-all duration-200
                       ${
                         isHovered
-                          ? 'text-[var(--q-green-deep)] scale-110'
+                          ? 'text-(--q-green-deep) scale-110'
                           : isSelected
-                            ? 'text-[var(--q-green-deep)]'
-                            : 'text-[var(--q-green-deep)]'
+                            ? 'text-(--q-green-deep)'
+                            : 'text-(--q-green-deep)'
                       }
                     `}
                   />
@@ -596,8 +659,8 @@ function PieMenuWrapper({ items, children }: PieMenuWrapperProps) {
                       marginBottom: pos.y <= 0 ? '8px' : '0',
                     }}
                   >
-                    <div className="bg-[var(--q-bg)] border border-[var(--q-border)] px-3 py-1.5 rounded-lg shadow-xl animate-in fade-in zoom-in-95 duration-150">
-                      <span className="text-sm font-medium text-[var(--q-text)]">
+                    <div className="bg-(--q-bg) border border-(--q-border) px-3 py-1.5 rounded-lg shadow-xl animate-in fade-in zoom-in-95 duration-150">
+                      <span className="text-sm font-medium text-(--q-text)">
                         {item.label}
                       </span>
                     </div>
@@ -625,7 +688,7 @@ function PieMenuWrapper({ items, children }: PieMenuWrapperProps) {
                   y2={center + pos.y}
                   stroke="currentColor"
                   strokeWidth="1"
-                  className="text-[var(--q-green-mid)]"
+                  className="text-(--q-green-mid)"
                 />
               )
             })}

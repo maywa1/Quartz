@@ -114,7 +114,7 @@ export function ImportExportPanel() {
 
           {exportProgress.stage === 'done' && (
             <p className="text-xs text-(--q-text-muted) font-light">
-              Export complete. Please reload the page to refresh the UI.
+              Export complete.
             </p>
           )}
         </div>
@@ -166,7 +166,7 @@ export function ImportExportPanel() {
 
           {importProgress.stage === 'done' && (
             <p className="text-xs text-(--q-text-muted) font-light">
-              Import complete. Please reload the page to see changes.
+              Import complete.
             </p>
           )}
         </div>
