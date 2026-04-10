@@ -49,10 +49,9 @@ Tests are not implemented :p
 ---
 
 # Styling
-
 use the css variables in styles.css
----
 
+---
 # Linting & Formatting
 
 ```bash
