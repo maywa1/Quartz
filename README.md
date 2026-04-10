@@ -12,11 +12,12 @@ Contributions are welcome :)
 
 ---
 # TODO
+- Make a landing page in /about
 - Dark Mode / Appearance options
 - Write tests
 - Build a custom GPU-accelerated drawing engine designed for math use cases (Will be a separate project of mine)
 - Everything else that turns this into a real project
-- Make a landing page in /about
+
 ---
 # Getting Started
 
