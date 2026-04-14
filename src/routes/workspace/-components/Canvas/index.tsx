@@ -9,9 +9,10 @@ import {
 import type { Note } from '#/types/types'
 import 'tldraw/tldraw.css'
 import { Spinner } from '#/components/ui'
-import { ArrowLeft, Trash2, Bookmark, BookmarkCheck, Edit3 } from 'lucide-react'
+import { Trash2, Bookmark, BookmarkCheck, Edit3 } from 'lucide-react'
 import { useNavigate } from '@tanstack/react-router'
 import { PromptDialog, ConfirmDialog } from '#/components/ui/Dialog'
+import { Sidebar } from '../Sidebar'
 
 interface CanvasProps {
   noteId?: string
@@ -21,7 +22,7 @@ interface CanvasProps {
 export function Canvas({ noteId, note: noteProp }: CanvasProps) {
   const navigate = useNavigate()
   const noteQuery = useNote(noteId || '')
-  const note = noteProp || noteQuery.data
+  const note = noteQuery.data || noteProp
   const updateNote = useUpdateNote()
   const deleteNote = useDeleteNote()
   const toggleViewLater = useToggleViewLater()
@@ -67,58 +68,33 @@ export function Canvas({ noteId, note: noteProp }: CanvasProps) {
 
   return (
     <div className="quartz h-screen w-full flex">
-      <div className="w-14 border-r border-(--q-border) bg-(--q-bg) flex flex-col py-4">
-        <button
-          onClick={() => navigate({ to: '/' })}
-          className="group flex items-center justify-center w-10 h-10 mx-auto mb-2 text-(--q-text-muted) hover:text-(--q-text) hover:bg-(--q-green-pale) rounded-md transition-colors relative"
-        >
-          <ArrowLeft className="w-5 h-5" />
-          <span className="absolute left-full ml-2 px-2 py-1 text-xs text-(--q-text) bg-(--q-bg-secondary) border border-(--q-border) rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50">
-            Back
-          </span>
-        </button>
-
-        <button
-          onClick={() => {
-            setTempName(note.name)
-            setShowRenameDialog(true)
-          }}
-          className="group flex items-center justify-center w-10 h-10 mx-auto mb-2 text-(--q-text-muted) hover:text-(--q-text) hover:bg-(--q-green-pale) rounded-md transition-colors relative"
-        >
-          <Edit3 className="w-5 h-5" />
-          <span className="absolute left-full ml-2 px-2 py-1 text-xs text-(--q-text) bg-(--q-bg-secondary) border border-(--q-border) rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50">
-            Rename
-          </span>
-        </button>
-
-        <button
-          onClick={handleToggleViewLater}
-          className={`group flex items-center justify-center w-10 h-10 mx-auto mb-2 rounded-md transition-colors relative ${
-            note.view_later
-              ? 'text-(--q-green) bg-(--q-green-pale)'
-              : 'text-(--q-text-muted) hover:text-(--q-text) hover:bg-(--q-green-pale)'
-          }`}
-        >
-          {note.view_later ? (
-            <BookmarkCheck className="w-5 h-5" />
-          ) : (
-            <Bookmark className="w-5 h-5" />
-          )}
-          <span className="absolute left-full ml-2 px-2 py-1 text-xs text-(--q-text) bg-(--q-bg-secondary) border border-(--q-border) rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50">
-            {note.view_later ? 'Saved' : 'Save'}
-          </span>
-        </button>
-
-        <button
-          onClick={() => setShowDeleteDialog(true)}
-          className="group flex items-center justify-center w-10 h-10 mx-auto mt-auto text-red-500 hover:bg-red-500/10 rounded-md transition-colors relative"
-        >
-          <Trash2 className="w-5 h-5" />
-          <span className="absolute left-full ml-2 px-2 py-1 text-xs text-(--q-text) bg-(--q-bg-secondary) border border-(--q-border) rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50">
-            Delete
-          </span>
-        </button>
-      </div>
+      <Sidebar
+        actions={[
+          {
+            id: 'rename',
+            icon: Edit3,
+            label: 'Rename',
+            onClick: () => {
+              setTempName(note.name)
+              setShowRenameDialog(true)
+            },
+          },
+          {
+            id: 'viewLater',
+            icon: note.view_later ? BookmarkCheck : Bookmark,
+            label: note.view_later ? 'Saved' : 'Save',
+            onClick: handleToggleViewLater,
+            active: note.view_later,
+          },
+          {
+            id: 'delete',
+            icon: Trash2,
+            label: 'Delete',
+            onClick: () => setShowDeleteDialog(true),
+            variant: 'danger',
+          },
+        ]}
+      />
 
       <div className="flex-1 overflow-hidden">
         <Tldraw persistenceKey={note.id} />

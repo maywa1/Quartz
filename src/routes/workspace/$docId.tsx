@@ -127,5 +127,5 @@ function Workspace() {
     )
   }
 
-  return <Canvas note={workspaceData.data} />
+  return <Canvas noteId={workspaceData.data.id} note={workspaceData.data} />
 }

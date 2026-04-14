@@ -198,7 +198,24 @@ export function useToggleViewLater() {
 
   return useMutation({
     mutationFn: (id: string) => db.notes.toggleViewLater(id),
-    onSuccess: (_, id) => {
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.notes.detail(id) })
+      const previousNote = queryClient.getQueryData(queryKeys.notes.detail(id))
+      queryClient.setQueryData<Note | undefined>(
+        queryKeys.notes.detail(id),
+        (old) => (old ? { ...old, view_later: !old.view_later } : old),
+      )
+      return { previousNote }
+    },
+    onError: (_err, id, context) => {
+      if (context?.previousNote) {
+        queryClient.setQueryData(
+          queryKeys.notes.detail(id),
+          context.previousNote,
+        )
+      }
+    },
+    onSettled: (_data, _err, id) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.notes.all })
       queryClient.invalidateQueries({ queryKey: queryKeys.notes.detail(id) })
       queryClient.invalidateQueries({ queryKey: queryKeys.notes.viewLater })
