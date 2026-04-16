@@ -1,6 +1,6 @@
 # Overview
 
-This is a very early-stage offline note-taking and drawing app built on TanStack Start.
+This is a very early-stage offline note-taking and drawing app (it's made for math, but there isn't anything math specific yet) built on TanStack Start.
 
 It uses tldraw as the current drawing engine and adds a layer that connects drawings to coordinates in PDF documents.
 
