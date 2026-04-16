@@ -15,8 +15,12 @@ Contributions are welcome :)
 - Make a landing page in /about
 - Dark Mode / Appearance options
 - Write tests
-- Build a custom GPU-accelerated drawing engine designed for math use cases (Will be a separate project of mine)
+- Make a fixed pdfs for things that you constantly have to check, for example a formula sheet provided by exams
+- add a calculator to the sidebar
 - Everything else that turns this into a real project
+
+I plan on building a custom GPU-accelerated drawing engine designed for math use cases, which will be a separate project of mine which I won't touch yet.
+
 
 ---
 # Getting Started
