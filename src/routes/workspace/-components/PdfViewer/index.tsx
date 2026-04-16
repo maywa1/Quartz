@@ -318,14 +318,8 @@ export default function PdfViewer({ pdf, initialPage }: Props) {
       await page.render({ canvasContext: context, viewport, canvas }).promise
 
       drawNotesOnPage(context, viewport, pageNum)
-
-      if (initialPage && pageNum === initialPage) {
-        requestAnimationFrame(() => {
-          canvas.scrollIntoView({ behavior: 'smooth', block: 'start' })
-        })
-      }
     },
-    [pdfDoc, scale, handleCanvasMouseDown, drawNotesOnPage, initialPage],
+    [pdfDoc, scale, handleCanvasMouseDown, drawNotesOnPage],
   )
 
   // Load PDF
@@ -373,7 +367,7 @@ export default function PdfViewer({ pdf, initialPage }: Props) {
     const placeholders: HTMLDivElement[] = []
 
     const buildPlaceholders = async () => {
-      if (!containerRef.current) return
+      if (!containerRef.current || !scrollContainerRef.current) return
 
       for (let pageNum = 1; pageNum <= numPages; pageNum++) {
         const placeholder = document.createElement('div')
@@ -387,6 +381,15 @@ export default function PdfViewer({ pdf, initialPage }: Props) {
 
         containerRef.current.appendChild(placeholder)
         placeholders.push(placeholder)
+      }
+
+      // Scroll to initial page immediately after placeholders are sized,
+      // before any rendering starts so there's no animation or flash.
+      if (initialPage && initialPage > 1) {
+        const targetPlaceholder = placeholders[initialPage - 1]
+        if (targetPlaceholder) {
+          scrollContainerRef.current.scrollTop = targetPlaceholder.offsetTop
+        }
       }
 
       const observer = new IntersectionObserver(
@@ -417,7 +420,7 @@ export default function PdfViewer({ pdf, initialPage }: Props) {
       if (observerRef.current) observerRef.current.disconnect()
       if (containerRef.current) containerRef.current.innerHTML = ''
     }
-  }, [pdfDoc, numPages, scale, renderPage])
+  }, [pdfDoc, numPages, scale, renderPage, initialPage])
 
   // Re-render visible pages when notes change
   useEffect(() => {
