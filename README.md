@@ -17,6 +17,7 @@ Contributions are welcome :)
 - Write tests
 - Make a fixed pdfs for things that you constantly have to check, for example a formula sheet provided by exams
 - add a calculator to the sidebar
+- Add more filtering options to the Explorer component
 - Everything else that turns this into a real project
 
 I plan on building a custom GPU-accelerated drawing engine designed for math use cases, which will be a separate project of mine which I won't touch yet.
