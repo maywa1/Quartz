@@ -72,3 +72,9 @@
   text-transform: uppercase;
   color: var(--q-green-mid);
 }
+
+.excalidraw {
+  --color-primary: #22c55e; /* your main green */
+  --color-primary-darker: #166534;
+  --color-primary-light: #bbf7d0;
+}

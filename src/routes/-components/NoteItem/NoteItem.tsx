@@ -110,10 +110,10 @@ export function NoteItem({
       if (isPdf) {
         await FileStorage.deleteDir(id)
         await deletePdf.mutateAsync(id)
-      } else await deleteNote.mutateAsync(id)
-    } catch {
-      /* errors handled by mutation */
-    }
+      } else {
+        await deleteNote.mutateAsync(id)
+      }
+    } catch {/* errors handled by mutation */}
     menu.close()
   }
 
@@ -242,7 +242,7 @@ export function NoteItem({
       {menu.isContextOpen && (
         <NoteItemMenu
           position={menu.position}
-          menuRef={menu.menuRef}
+          menuRef={menu.menuRef as React.RefObject<HTMLDivElement>}
           onRename={handleRenameStart}
           onManageTags={handleManageTags}
           onDelete={handleDelete}

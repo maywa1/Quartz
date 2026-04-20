@@ -75,6 +75,7 @@ export default function PdfViewer({ pdf, initialPage }: Props) {
   const notesPerPageRef = useRef<{ [pageNum: number]: Note[] }>({})
   const renderedPagesRef = useRef<Set<number>>(new Set())
   const observerRef = useRef<IntersectionObserver | null>(null)
+  const initialScrollDoneRef = useRef(false)
 
   const handleNoteSubmit = async (name: string) => {
     if (!noteCoordinates) return
@@ -339,6 +340,7 @@ export default function PdfViewer({ pdf, initialPage }: Props) {
           const loadedPdf = await pdfjsLib.getDocument(typedArray).promise
           setPdfDoc(loadedPdf)
           setNumPages(loadedPdf.numPages)
+          initialScrollDoneRef.current = false
         }
       } catch (error) {
         if (isMounted) {
@@ -383,12 +385,12 @@ export default function PdfViewer({ pdf, initialPage }: Props) {
         placeholders.push(placeholder)
       }
 
-      // Scroll to initial page immediately after placeholders are sized,
-      // before any rendering starts so there's no animation or flash.
-      if (initialPage && initialPage > 1) {
+      // Scroll to initial page once per PDF load, before rendering starts.
+      if (initialPage && initialPage > 1 && !initialScrollDoneRef.current) {
         const targetPlaceholder = placeholders[initialPage - 1]
         if (targetPlaceholder) {
           scrollContainerRef.current.scrollTop = targetPlaceholder.offsetTop
+          initialScrollDoneRef.current = true
         }
       }
 

@@ -3,7 +3,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { FileStorage } from '#/lib/FileStorage'
 import { APP_VERSION, SCHEMA_VERSION } from '#/utils/config'
 import { useDatabase } from '#/providers'
-import { useNotes, deleteTldrawDocument } from './useNotes'
+import { useNotes } from './useNotes'
 import { usePdfs } from './usePdfs'
 import { useTags, useAllNoteTags, useAllPdfTags } from './useTags'
 import { useSettings } from './useSettings'
@@ -14,14 +14,7 @@ import type { PDF, Note, Tag } from '#/types/types'
 // ---------------------------------------------------------------------------
 
 export interface ExportProgress {
-  stage:
-    | 'idle'
-    | 'database'
-    | 'drawings'
-    | 'pdfs'
-    | 'packing'
-    | 'done'
-    | 'error'
+  stage: 'idle' | 'database' | 'pdfs' | 'packing' | 'done' | 'error'
   current: number
   total: number
   label: string
@@ -33,7 +26,6 @@ export interface ImportProgress {
     | 'reading'
     | 'validating'
     | 'database'
-    | 'drawings'
     | 'pdfs'
     | 'done'
     | 'error'
@@ -69,87 +61,6 @@ interface QuartzBundle {
     tag_pdfs: { tag_id: string; pdf_id: string }[]
     settings: { key: string; value: string }[]
   }
-  drawings: Record<string, unknown>
-}
-
-// ---------------------------------------------------------------------------
-// IndexedDB helpers for tldraw
-// ---------------------------------------------------------------------------
-
-const TLDRAW_DB_PREFIX = 'TLDRAW_DOCUMENT_V2'
-
-interface TldrawDump {
-  name: string
-  stores: Record<string, unknown[]>
-}
-
-async function exportTldrawIDB(noteId: string): Promise<TldrawDump | null> {
-  const dbName = `${TLDRAW_DB_PREFIX}${noteId}`
-  return new Promise((resolve) => {
-    const req = indexedDB.open(dbName)
-    req.onerror = () => resolve(null)
-    req.onsuccess = async () => {
-      const db = req.result
-      const stores: Record<string, unknown[]> = {}
-      for (const storeName of db.objectStoreNames) {
-        const tx = db.transaction(storeName, 'readonly')
-        const store = tx.objectStore(storeName)
-        const data = await new Promise<unknown[]>((res) => {
-          const r = store.getAll()
-          r.onsuccess = () => res(r.result)
-          r.onerror = () => res([])
-        })
-        stores[storeName] = data
-      }
-      db.close()
-      resolve({ name: dbName, stores })
-    }
-    req.onupgradeneeded = () => {
-      req.result.close()
-      resolve(null)
-    }
-  })
-}
-
-async function importTldrawIDB(dump: TldrawDump): Promise<void> {
-  const dbName = dump.name
-  const noteId = dbName.replace(TLDRAW_DB_PREFIX, '')
-  await deleteTldrawDocument(noteId)
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.open(dbName)
-    req.onerror = () => reject(req.error)
-    req.onupgradeneeded = (e) => {
-      const db = (e.target as IDBOpenDBRequest).result
-      for (const storeName of Object.keys(dump.stores)) {
-        if (!db.objectStoreNames.contains(storeName)) {
-          db.createObjectStore(storeName, { keyPath: 'id' })
-        }
-      }
-    }
-    req.onsuccess = () => {
-      const db = req.result
-      const storeNames = Object.keys(dump.stores)
-      let completed = 0
-      for (const storeName of storeNames) {
-        const tx = db.transaction(storeName, 'readwrite')
-        const store = tx.objectStore(storeName)
-        for (const record of dump.stores[storeName]) {
-          store.put(record)
-        }
-        tx.oncomplete = () => {
-          completed++
-          if (completed === storeNames.length) {
-            db.close()
-            resolve()
-          }
-        }
-        tx.onerror = () => {
-          db.close()
-          reject(tx.error)
-        }
-      }
-    }
-  })
 }
 
 // ---------------------------------------------------------------------------
@@ -419,30 +330,6 @@ export function useImportExport() {
       )
 
       setExportProgress({
-        stage: 'drawings',
-        current: 0,
-        total: notes.length,
-        label: 'Exporting drawings…',
-      })
-
-      for (let i = 0; i < notes.length; i++) {
-        const note = notes[i]
-        const dump = await exportTldrawIDB(note.id)
-        if (dump && Object.keys(dump.stores).length > 0) {
-          zip.addFileStr(
-            `tldraw/${note.id}.json`,
-            enc.encode(JSON.stringify(dump)),
-          )
-        }
-        setExportProgress({
-          stage: 'drawings',
-          current: i + 1,
-          total: notes.length,
-          label: `Exporting drawing ${i + 1} of ${notes.length}…`,
-        })
-      }
-
-      setExportProgress({
         stage: 'pdfs',
         current: 0,
         total: pdfs.length,
@@ -578,30 +465,6 @@ export function useImportExport() {
           total: tables.length,
           label: 'Database restored',
         })
-
-        const drawingFiles = zipFiles.filter(
-          (f) => f.name.startsWith('tldraw/') && f.name.endsWith('.json'),
-        )
-        setImportProgress({
-          stage: 'drawings',
-          current: 0,
-          total: drawingFiles.length,
-          label: 'Restoring drawings…',
-        })
-
-        for (let i = 0; i < drawingFiles.length; i++) {
-          const df = drawingFiles[i]
-          const noteId = df.name.replace('tldraw/', '').replace('.json', '')
-          const dump = JSON.parse(dec.decode(df.data)) as TldrawDump
-          dump.name = `${TLDRAW_DB_PREFIX}${noteId}`
-          await importTldrawIDB(dump)
-          setImportProgress({
-            stage: 'drawings',
-            current: i + 1,
-            total: drawingFiles.length,
-            label: `Restored drawing ${i + 1} of ${drawingFiles.length}…`,
-          })
-        }
 
         const pdfFiles = zipFiles.filter(
           (f) => f.name.startsWith('pdfs/') && f.name.endsWith('.pdf'),

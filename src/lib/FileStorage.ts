@@ -102,9 +102,21 @@ export class FileStorage {
     await dir.removeEntry(parts[parts.length - 1])
   }
 
-  static async deleteDir(id: string): Promise<void> {
+  static async deleteDir(path: string): Promise<void> {
     const root = await this.getOpfsRoot()
-    await root.removeEntry(id, { recursive: true })
+    const parts = path.split('/').filter(Boolean)
+
+    if (parts.length === 1) {
+      await root.removeEntry(parts[0], { recursive: true })
+      return
+    }
+
+    let dir: FileSystemDirectoryHandle = root
+    for (let i = 0; i < parts.length - 1; i++) {
+      dir = await dir.getDirectoryHandle(parts[i])
+    }
+
+    await dir.removeEntry(parts[parts.length - 1], { recursive: true })
   }
   static buildPdfPath(id: string): string {
     return `${id}/document.pdf`
