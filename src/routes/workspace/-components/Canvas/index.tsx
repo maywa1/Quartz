@@ -46,14 +46,14 @@ export function Canvas({ noteId, note: noteProp }: CanvasProps) {
 
   const drawingPath = useMemo(() => {
     if (!note?.id) return ''
-    return `notes/${note.id}/drawing.json`
+    return FileStorage.buildNotePath(note.id)
   }, [note?.id])
 
   useEffect(() => {
     async function loadFile() {
       if (!drawingPath) return
 
-      if (drawingPath !== `notes/${previousNoteIdRef.current}/drawing.json`) {
+      if (drawingPath !== FileStorage.buildNotePath(previousNoteIdRef.current as string)) {
         previousNoteIdRef.current = note?.id || null
         setIsLoading(true)
         isUserChangeRef.current = false

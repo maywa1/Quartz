@@ -119,10 +119,10 @@ export class FileStorage {
     await dir.removeEntry(parts[parts.length - 1], { recursive: true })
   }
   static buildPdfPath(id: string): string {
-    return `${id}/document.pdf`
+    return `pdfs/${id}/document.pdf`
   }
 
-  static buildPath(id: string, fileName: string): string {
-    return `${id}/${fileName}`
+  static buildNotePath(id: string): string {
+    return `notes/${id}/drawing.excalidraw`
   }
 }

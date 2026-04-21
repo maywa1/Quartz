@@ -14,7 +14,7 @@ import type { PDF, Note, Tag } from '#/types/types'
 // ---------------------------------------------------------------------------
 
 export interface ExportProgress {
-  stage: 'idle' | 'database' | 'pdfs' | 'packing' | 'done' | 'error'
+  stage: 'idle' | 'database' | 'notes' | 'pdfs' | 'packing' | 'done' | 'error'
   current: number
   total: number
   label: string
@@ -26,6 +26,7 @@ export interface ImportProgress {
     | 'reading'
     | 'validating'
     | 'database'
+    | 'notes'
     | 'pdfs'
     | 'done'
     | 'error'
@@ -40,6 +41,7 @@ interface QuartzManifest {
   exportedAt: string
   totalPdfs: number
   totalNotes: number
+  hasNotesFiles: boolean
 }
 
 interface DatabaseDump {
@@ -305,6 +307,7 @@ export function useImportExport() {
         exportedAt: new Date().toISOString(),
         totalPdfs: pdfs.length,
         totalNotes: notes.length,
+        hasNotesFiles: notes.length > 0,
       }
 
       zip.addFileStr(
@@ -328,6 +331,33 @@ export function useImportExport() {
           ),
         ),
       )
+
+      setExportProgress({
+        stage: 'notes',
+        current: 0,
+        total: notes.length,
+        label: 'Exporting notes…',
+      })
+
+      for (let i = 0; i < notes.length; i++) {
+        const note = notes[i]
+        const path = FileStorage.buildNotePath(note.id)
+        try {
+          const text = await FileStorage.readAsText(path)
+          zip.addFileStr(
+            `notes/${note.id}/drawing.excalidraw`,
+            new TextEncoder().encode(text),
+          )
+        } catch {
+          console.warn(`Could not read note for id=${note.id}, skipping`)
+        }
+        setExportProgress({
+          stage: 'notes',
+          current: i + 1,
+          total: notes.length,
+          label: `Exporting note ${i + 1} of ${notes.length}…`,
+        })
+      }
 
       setExportProgress({
         stage: 'pdfs',
@@ -466,6 +496,28 @@ export function useImportExport() {
           label: 'Database restored',
         })
 
+        const noteFiles = zipFiles.filter(
+          (f) => f.name.startsWith('notes/') && f.name.endsWith('.excalidraw'),
+        )
+        setImportProgress({
+          stage: 'notes',
+          current: 0,
+          total: noteFiles.length,
+          label: 'Restoring notes…',
+        })
+
+        for (let i = 0; i < noteFiles.length; i++) {
+          const nf = noteFiles[i]
+          const storagePath = nf.name
+          await FileStorage.write(storagePath, nf.data.buffer as ArrayBuffer)
+          setImportProgress({
+            stage: 'notes',
+            current: i + 1,
+            total: noteFiles.length,
+            label: `Restored note ${i + 1} of ${noteFiles.length}…`,
+          })
+        }
+
         const pdfFiles = zipFiles.filter(
           (f) => f.name.startsWith('pdfs/') && f.name.endsWith('.pdf'),
         )
@@ -478,7 +530,7 @@ export function useImportExport() {
 
         for (let i = 0; i < pdfFiles.length; i++) {
           const pf = pdfFiles[i]
-          const storagePath = pf.name.replace(/^pdfs\//, '')
+          const storagePath = pf.name
           await FileStorage.write(storagePath, pf.data.buffer as ArrayBuffer)
           setImportProgress({
             stage: 'pdfs',

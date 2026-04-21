@@ -1,5 +1,7 @@
 import type { Note } from '#/types/types'
 import { BaseRepository } from './BaseRepository'
+import { FileStorage } from '#/lib/FileStorage'
+
 
 type SQLiteCompatibleType = string | number | null
 
@@ -23,7 +25,7 @@ export class NoteRepository extends BaseRepository {
     coordinates?: NoteCoordinates,
   ): Promise<string> {
     const id = crypto.randomUUID()
-    const fileName = `${id}.tldr`
+    const fileName = FileStorage.buildNotePath(id)
     await this.db.run(
       `INSERT INTO notes (id, name, file_name, pdf_id, pdf_coordinate_x, pdf_coordinate_y, pdf_page)
        VALUES (?, ?, ?, ?, ?, ?, ?)`,

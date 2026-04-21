@@ -106,7 +106,7 @@ export function useCreateNote() {
     mutationFn: async ({ name, pdfId, coordinates }: CreateNoteParams) => {
       const id = await db.notes.create(name, pdfId, coordinates)
 
-      const path = `notes/${id}/drawing.json`
+      const path = FileStorage.buildNotePath(id)
       await FileStorage.write(path, createEmptyExcalidraw())
 
       return id
