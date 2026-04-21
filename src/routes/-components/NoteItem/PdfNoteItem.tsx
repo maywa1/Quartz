@@ -8,6 +8,7 @@ import { formatDate } from '#/utils/formatDate'
 import type { Tag } from '#/types/types'
 import { useDeleteNote, useUpdateNote } from '#/hooks'
 import { NoteItemMenu } from './NoteItemMenu'
+import { useNoteItemMenu } from './hooks/UseNoteItemMenu'
 
 interface PdfNoteItemProps {
   id: string
@@ -34,9 +35,13 @@ export function PdfNoteItem({
   const [isEditing, setIsEditing] = useState(false)
   const [editName, setEditName] = useState(name)
   const inputRef = useRef<HTMLInputElement>(null)
-  const menuRef = useRef<HTMLDivElement>(null)
-  const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 })
-  const [isContextOpen, setIsContextOpen] = useState(false)
+
+  const menu = useNoteItemMenu(id, {
+    contextWidth: 148,
+    contextHeight: 140,
+    tagsWidth: 148,
+    tagsHeight: 140,
+  })
 
   const deleteNote = useDeleteNote()
   const updateNote = useUpdateNote()
@@ -48,32 +53,10 @@ export function PdfNoteItem({
     }
   }, [isEditing])
 
-  useEffect(() => {
-    if (!isContextOpen) return
-
-    function onClickOutside(e: Event) {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setIsContextOpen(false)
-      }
-    }
-
-    function onEscape(e: Event) {
-      if ((e as unknown as KeyboardEvent).key === 'Escape')
-        setIsContextOpen(false)
-    }
-
-    document.addEventListener('click', onClickOutside)
-    document.addEventListener('keydown', onEscape)
-    return () => {
-      document.removeEventListener('click', onClickOutside)
-      document.removeEventListener('keydown', onEscape)
-    }
-  }, [isContextOpen])
-
   function startEdit() {
     setEditName(name)
     setIsEditing(true)
-    setIsContextOpen(false)
+    menu.close()
   }
 
   function commitEdit() {
@@ -90,7 +73,7 @@ export function PdfNoteItem({
   function handleDelete() {
     if (!confirm(`Delete "${name}"?`)) return
     deleteNote.mutate(id)
-    setIsContextOpen(false)
+    menu.close()
   }
 
   const displayTags = tags.slice(0, 5)
@@ -121,8 +104,7 @@ export function PdfNoteItem({
         }}
         onContextMenu={(e: MouseEvent) => {
           e.preventDefault()
-          setMenuPosition({ x: e.clientX, y: e.clientY })
-          setIsContextOpen(true)
+          menu.openContext(e.clientX, e.clientY)
         }}
       >
         <div className="q-pdf-note-item__title-row">
@@ -158,8 +140,7 @@ export function PdfNoteItem({
               onClick={(e) => {
                 e.stopPropagation()
                 const r = e.currentTarget.getBoundingClientRect()
-                setMenuPosition({ x: r.left, y: r.bottom + 4 })
-                setIsContextOpen(true)
+                menu.openContext(r.left, r.bottom + 4)
               }}
             >
               <MoreHorizontal size={15} strokeWidth={1.75} />
@@ -186,10 +167,10 @@ export function PdfNoteItem({
         )}
       </div>
 
-      {isContextOpen && (
+      {menu.isContextOpen && (
         <NoteItemMenu
-          position={menuPosition}
-          menuRef={menuRef as React.RefObject<HTMLDivElement>}
+          position={menu.position}
+          menuRef={menu.menuRef as React.RefObject<HTMLDivElement>}
           onRename={handleRename}
           onManageTags={() => {}}
           onDelete={handleDelete}

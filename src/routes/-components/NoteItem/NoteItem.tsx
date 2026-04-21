@@ -55,7 +55,12 @@ export function NoteItem({
 
   const [expanded, setExpanded] = useState(false)
 
-  const menu = useNoteItemMenu()
+  const menu = useNoteItemMenu(id, {
+    contextWidth: 148,
+    contextHeight: 140,
+    tagsWidth: 210,
+    tagsHeight: 320,
+  })
   const edit = useNoteItemEdit({ id, name, isPdf })
   const tagOps = useNoteItemTags({ id, tags, isPdf })
 
@@ -113,7 +118,9 @@ export function NoteItem({
       } else {
         await deleteNote.mutateAsync(id)
       }
-    } catch {/* errors handled by mutation */}
+    } catch {
+      /* errors handled by mutation */
+    }
     menu.close()
   }
 
