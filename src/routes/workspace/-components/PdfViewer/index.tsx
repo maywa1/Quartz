@@ -216,8 +216,8 @@ export default function PdfViewer({ pdf, initialPage }: Props) {
     [cancelHold],
   )
 
-  const handleCanvasMouseDown = useCallback(
-    async (e: MouseEvent, pageNum: number) => {
+  const handleCanvasPointerDown = useCallback(
+    async (e: PointerEvent, pageNum: number) => {
       if (e.button !== 0) return
       if (!pdfDoc) return
 
@@ -305,9 +305,10 @@ export default function PdfViewer({ pdf, initialPage }: Props) {
       canvas.className = 'cursor-crosshair border border-gray-300 select-none'
       canvas.dataset.pageNumber = pageNum.toString()
 
-      canvas.addEventListener('mousedown', (e) =>
-        handleCanvasMouseDown(e, pageNum),
-      )
+      canvas.addEventListener('pointerdown', (e) => {
+        e.preventDefault()
+        handleCanvasPointerDown(e, pageNum)
+      })
 
       placeholder.style.width = `${viewport.width}px`
       placeholder.style.height = `${viewport.height}px`
@@ -317,7 +318,7 @@ export default function PdfViewer({ pdf, initialPage }: Props) {
 
       drawNotesOnPage(context, viewport, pageNum)
     },
-    [pdfDoc, scale, handleCanvasMouseDown, drawNotesOnPage],
+    [pdfDoc, scale, handleCanvasPointerDown, drawNotesOnPage],
   )
 
   // Load PDF
