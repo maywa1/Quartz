@@ -8,10 +8,7 @@ import { Button } from '#/components/ui/Button/Button'
 import type { PDF, Note } from '#/types/types'
 import LongPressRing from './LongPressRing'
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.mjs',
-  import.meta.url,
-).toString()
+pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js'
 
 interface Props {
   pdf: PDF
