@@ -53,7 +53,10 @@ export function Canvas({ noteId, note: noteProp }: CanvasProps) {
     async function loadFile() {
       if (!drawingPath) return
 
-      if (drawingPath !== FileStorage.buildNotePath(previousNoteIdRef.current as string)) {
+      if (
+        drawingPath !==
+        FileStorage.buildNotePath(previousNoteIdRef.current as string)
+      ) {
         previousNoteIdRef.current = note?.id || null
         setIsLoading(true)
         isUserChangeRef.current = false
@@ -202,7 +205,7 @@ export function Canvas({ noteId, note: noteProp }: CanvasProps) {
 
   if (!note && noteQuery.isLoading) {
     return (
-      <div className="quartz h-screen w-full flex items-center justify-center">
+      <div className="quartz h-full w-full flex items-center justify-center">
         <Spinner />
       </div>
     )
@@ -246,17 +249,19 @@ export function Canvas({ noteId, note: noteProp }: CanvasProps) {
         ]}
       />
 
-      <div className="flex-1 overflow-hidden" key={note.id}>
+      <div className="relative flex-1 overflow-hidden" key={note.id}>
         {isLoading && (
-          <div className="absolute inset-0 z-50 bg-background flex items-center justify-center">
+          <div className="absolute inset-0 z-50 flex items-center justify-center">
             <div className="text-center">
-              <Spinner className="h-12 w-12" />
-              <p className="text-sm text-muted-foreground">Loading...</p>
+              <Spinner size="lg" />
+              <p className="text-sm text-muted-foreground mt-4">Loading...</p>
             </div>
           </div>
         )}
 
-        <div className={`w-full h-full ${isLoading ? 'invisible' : 'visible'} custom-styles`}>
+        <div
+          className={`w-full h-full ${isLoading ? 'invisible' : 'visible'} custom-styles`}
+        >
           <Excalidraw
             excalidrawAPI={(api) => (excalidrawAPIRef.current = api)}
             theme="light"
