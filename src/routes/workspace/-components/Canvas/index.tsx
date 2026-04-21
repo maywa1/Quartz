@@ -45,19 +45,16 @@ export function Canvas({ noteId, note: noteProp }: CanvasProps) {
   const previousNoteIdRef = useRef<string | null>(null)
 
   const drawingPath = useMemo(() => {
-    if (!note?.id) return ''
-    return FileStorage.buildNotePath(note.id)
-  }, [note?.id])
+    if (!note?.id || !noteId) return ''
+    return FileStorage.buildNotePath(note.id || noteId)
+  }, [note?.id, noteId])
 
   useEffect(() => {
     async function loadFile() {
       if (!drawingPath) return
 
-      if (
-        drawingPath !==
-        FileStorage.buildNotePath(previousNoteIdRef.current as string)
-      ) {
-        previousNoteIdRef.current = note?.id || null
+      if (drawingPath !== FileStorage.buildNotePath(previousNoteIdRef.current as string)){
+        previousNoteIdRef.current = note?.id || noteId || null
         setIsLoading(true)
         isUserChangeRef.current = false
         initialLoadCompleteRef.current = false
@@ -78,7 +75,7 @@ export function Canvas({ noteId, note: noteProp }: CanvasProps) {
     }
 
     loadFile()
-  }, [drawingPath, note?.id])
+  }, [drawingPath, note?.id, noteId])
 
   const initialData = useMemo(() => {
     if (!fileContent) {

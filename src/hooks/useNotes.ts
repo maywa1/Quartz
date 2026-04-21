@@ -142,7 +142,7 @@ export function useDeleteNote() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      console.log("id of note: " + id)
+      console.log('id of note: ' + id)
       await FileStorage.deleteDir(`notes/${id}`)
       await db.notes.delete(id)
     },

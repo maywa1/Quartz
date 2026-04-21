@@ -116,7 +116,7 @@ function Workspace() {
       <ResizablePanelGroup orientation="horizontal" className="h-screen">
         <ResizablePanel defaultSize={50} minSize={0}>
           <div className="h-full bg-(--q-bg)">
-            {activeNoteId ? <Canvas noteId={activeNoteId} /> : <NoteNotFound />}
+              {activeNoteId ? <Canvas key={activeNoteId} noteId={activeNoteId} /> : <NoteNotFound />}
           </div>
         </ResizablePanel>
         <ResizableHandle withHandle />
