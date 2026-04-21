@@ -2,13 +2,18 @@
 
 This is a very early-stage offline note-taking and drawing app (it's made for math, but there isn't anything math specific yet) built on TanStack Start.
 
-It uses tldraw as the current drawing engine and adds a layer that connects drawings to coordinates in PDF documents.
+It uses excalidraw as the current drawing engine and adds a layer that connects drawings to coordinates in PDF documents.
 
 The project is far from done. The structure, features, and even core systems might change as the project evolves.
 
 Contributions are welcome :)
 
 *(I won't be developing much now because the app is in a usable state and I'm currently studying for some exams using it)*
+
+---
+
+# Try out the app!
+[App still in early stages be nice :)](https://quartz.maywai.net)
 
 ---
 # TODO
