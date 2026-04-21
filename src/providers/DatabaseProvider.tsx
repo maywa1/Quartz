@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import { DatabaseContext } from './useDatabase'
 import { DatabaseWorkerClient } from '#/lib/DatabaseWorkerClient'
-import { Spinner } from '#/components/ui'
 
 interface DatabaseProviderProps {
   dbName?: string
@@ -26,7 +25,7 @@ export function DatabaseProvider({ dbName, children }: DatabaseProviderProps) {
     }
   }, [dbName])
 
-  if (!ready || !workerClient) return <Spinner />
+  if (!ready || !workerClient) return null
 
   return (
     <DatabaseContext.Provider value={{ db: workerClient, ready }}>
