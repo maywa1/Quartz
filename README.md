@@ -25,7 +25,7 @@ Contributions are welcome :)
 - Add more filtering options to the Explorer component
 - Everything else that turns this into a real project
 
-I plan on building a custom GPU-accelerated drawing engine designed for math use cases, which will be a separate project of mine which I won't touch yet.
+I plan on building a custom GPU rendered drawing engine designed for math use cases, which will be a separate project of mine which I won't touch yet.
 
 
 ---
