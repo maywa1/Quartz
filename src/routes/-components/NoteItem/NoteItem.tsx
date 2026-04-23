@@ -37,6 +37,7 @@ export interface NoteItemProps {
   active?: boolean
   onClick?: () => void
   className?: string
+  filterViewLater?: boolean
 }
 
 export function NoteItem({
@@ -49,6 +50,7 @@ export function NoteItem({
   active = false,
   onClick,
   className,
+  filterViewLater = false,
 }: NoteItemProps) {
   const navigate = useNavigate()
   const isPdf = !!pdfName
@@ -231,18 +233,20 @@ export function NoteItem({
 
       {isPdf && expanded && pdfNotes.length > 0 && (
         <div className="q-note-item__pdf-children">
-          {pdfNotes.map((note) => (
-            <PdfNoteItem
-              key={note.id}
-              id={note.id}
-              name={note.name}
-              pdfId={id}
-              pdfPage={note.pdf_page}
-              tags={pdfNoteTagsMap.get(note.id) ?? []}
-              createdAt={note.created_at}
-              viewLater={note.view_later}
-            />
-          ))}
+          {pdfNotes
+            .filter((note) => !filterViewLater || note.view_later)
+            .map((note) => (
+              <PdfNoteItem
+                key={note.id}
+                id={note.id}
+                name={note.name}
+                pdfId={id}
+                pdfPage={note.pdf_page}
+                tags={pdfNoteTagsMap.get(note.id) ?? []}
+                createdAt={note.created_at}
+                viewLater={note.view_later}
+              />
+            ))}
         </div>
       )}
 

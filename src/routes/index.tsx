@@ -5,9 +5,17 @@ import { AddNoteItem } from './-components/AddNoteItem'
 import type { AddNoteItemHandle } from './-components/AddNoteItem'
 import { SearchBar } from './-components/SearchBar'
 import type { SearchBarHandle } from './-components/SearchBar'
+import { TagFilter } from './-components/TagFilter'
+import { ViewLaterToggle } from './-components/ViewLaterToggle'
 import { Tabs, Text } from '#/components/ui'
 import Header from '#/components/Header'
-import { useNotes, usePdfs, useAllNoteTags, useAllPdfTags } from '#/hooks'
+import {
+  useNotes,
+  usePdfs,
+  useAllNoteTags,
+  useAllPdfTags,
+  useTags,
+} from '#/hooks'
 import type { Note, Tag, PDF } from '#/types/types'
 
 export const Route = createFileRoute('/')({
@@ -26,6 +34,8 @@ interface PdfWithTags extends PDF {
 function Explorer() {
   const [searchQuery, setSearchQuery] = useState('')
   const [activeTab, setActiveTab] = useState<TabId>('all')
+  const [tagFilter, setTagFilter] = useState<string[]>([])
+  const [viewLaterFilter, setViewLaterFilter] = useState(false)
   const searchBarRef = useRef<SearchBarHandle>(null)
   const addNoteItemRef = useRef<AddNoteItemHandle>(null)
 
@@ -33,6 +43,7 @@ function Explorer() {
   const { data: pdfs = [], isLoading: pdfsLoading } = usePdfs()
   const { data: noteTagsMap = new Map<string, Tag[]>() } = useAllNoteTags()
   const { data: pdfTagsMap = new Map<string, Tag[]>() } = useAllPdfTags()
+  const { data: allTags = [] } = useTags()
 
   const isLoading = notesLoading || pdfsLoading
 
@@ -72,15 +83,20 @@ function Explorer() {
       .map((note) => ({ ...note, tags: noteTagsMap.get(note.id) ?? [] }))
       .filter(
         (note) =>
-          !query ||
-          note.name.toLowerCase().includes(query) ||
-          note.tags.some((t) => t.name.toLowerCase().includes(query)),
+          (!query ||
+            note.name.toLowerCase().includes(query) ||
+            note.tags.some((t) => t.name.toLowerCase().includes(query))) &&
+          (!tagFilter.length ||
+            tagFilter.every((tagId) =>
+              note.tags.some((t) => t.id === tagId),
+            )) &&
+          (!viewLaterFilter || note.view_later),
       )
       .sort(
         (a, b) =>
           new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
       )
-  }, [notes, noteTagsMap, searchQuery])
+  }, [notes, noteTagsMap, searchQuery, tagFilter, viewLaterFilter])
 
   const processedPdfs = useMemo((): PdfWithTags[] => {
     const query = searchQuery.trim().toLowerCase()
@@ -88,15 +104,22 @@ function Explorer() {
       .map((pdf) => ({ ...pdf, tags: pdfTagsMap.get(pdf.id) ?? [] }))
       .filter(
         (pdf) =>
-          !query ||
-          pdf.name.toLowerCase().includes(query) ||
-          pdf.tags.some((t) => t.name.toLowerCase().includes(query)),
+          (!query ||
+            pdf.name.toLowerCase().includes(query) ||
+            pdf.tags.some((t) => t.name.toLowerCase().includes(query))) &&
+          (!tagFilter.length ||
+            tagFilter.every((tagId) => pdf.tags.some((t) => t.id === tagId))) &&
+          (!viewLaterFilter || hasViewLaterChildNote(pdf.id)),
       )
       .sort(
         (a, b) =>
           new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
       )
-  }, [pdfs, pdfTagsMap, searchQuery])
+  }, [pdfs, pdfTagsMap, searchQuery, tagFilter, viewLaterFilter, notes])
+
+  function hasViewLaterChildNote(pdfId: string): boolean {
+    return notes.some((n) => n.pdf_id === pdfId && n.view_later)
+  }
 
   const tabCounts = useMemo(
     () => ({
@@ -129,7 +152,13 @@ function Explorer() {
     }
 
     if (isEmpty) {
-      return <ExplorerEmpty hasSearch={!!searchQuery} tabId={tabId} />
+      return (
+        <ExplorerEmpty
+          hasSearch={!!searchQuery}
+          tabId={tabId}
+          viewLaterFilter={viewLaterFilter}
+        />
+      )
     }
 
     return (
@@ -153,6 +182,7 @@ function Explorer() {
               tags={pdf.tags}
               createdAt={pdf.created_at}
               pdfName={pdf.file_name}
+              filterViewLater={viewLaterFilter}
             />
           ))}
       </div>
@@ -164,12 +194,31 @@ function Explorer() {
       <Header />
 
       <div className="max-w-4xl mx-auto px-6 py-8 flex flex-col gap-5">
-        {/* Search */}
-        <SearchBar
-          ref={searchBarRef}
-          value={searchQuery}
-          onChange={setSearchQuery}
-        />
+        {/* Search + Filter */}
+        <div className="flex flex-col gap-2">
+          <SearchBar
+            ref={searchBarRef}
+            value={searchQuery}
+            onChange={setSearchQuery}
+          />
+          <div className="flex items-center gap-3">
+            <TagFilter
+              allTags={allTags}
+              selectedTagIds={tagFilter}
+              onToggleTag={(id) =>
+                setTagFilter((prev) =>
+                  prev.includes(id)
+                    ? prev.filter((t) => t !== id)
+                    : [...prev, id],
+                )
+              }
+            />
+            <ViewLaterToggle
+              active={viewLaterFilter}
+              onToggle={setViewLaterFilter}
+            />
+          </div>
+        </div>
 
         {/* New note trigger */}
         <AddNoteItem ref={addNoteItemRef} />
@@ -207,20 +256,28 @@ function ExplorerSkeleton() {
 interface ExplorerEmptyProps {
   hasSearch: boolean
   tabId: TabId
+  viewLaterFilter: boolean
 }
 
-function ExplorerEmpty({ hasSearch, tabId }: ExplorerEmptyProps) {
-  const message = hasSearch
-    ? 'No results match your search'
-    : tabId === 'pdfs'
-      ? 'No PDFs yet'
-      : tabId === 'individual'
-        ? 'No notes yet'
-        : 'Nothing here yet'
+function ExplorerEmpty({
+  hasSearch,
+  tabId,
+  viewLaterFilter,
+}: ExplorerEmptyProps) {
+  const message =
+    hasSearch || viewLaterFilter
+      ? 'No results match your search'
+      : tabId === 'pdfs'
+        ? 'No PDFs yet'
+        : tabId === 'individual'
+          ? 'No notes yet'
+          : 'Nothing here yet'
 
   const hint = hasSearch
     ? 'Try a different keyword or clear the search'
-    : 'Create your first one above'
+    : viewLaterFilter
+      ? 'No saved items match your filters'
+      : 'Create your first one above'
 
   return (
     <div className="flex flex-col items-center justify-center py-16 gap-2 text-center">
